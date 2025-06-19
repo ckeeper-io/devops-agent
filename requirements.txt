@@ -1,0 +1,12 @@
+langchain-core
+langchain-google-genai
+python-dotenv
+langchain-community
+langchain_openai
+typing-extensions
+fastapi
+pydantic
+requests
+bs4
+pathlib
+langgraph
