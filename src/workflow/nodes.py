@@ -19,7 +19,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
 current_dir = os.path.dirname(os.path.abspath(__file__))
 class Nodes():
     def __init__(self):
@@ -31,7 +30,29 @@ class Nodes():
         logger.info('entering initial state')
         ## Cloning codebase
         for repo in state['github_repositories']:
-            subprocess.run(['git', 'clone', f'https://{state["github_token"]}@github.com/{repo}.git',repo], cwd=os.path.abspath(os.path.join(current_dir, "..",'codebase')), check=True) 
+            logger.info(repo)
+            command=f'cd .. && cd codebase && git clone https://{state["github_token"]}@github.com/{repo}.git'
+            result = subprocess.run(
+                command,
+                cwd=current_dir,         # Start from current_dir
+                shell=True,              # Required for using 'cd' and '&&'
+                stdout=subprocess.PIPE,  # Capture standard output
+                stderr=subprocess.PIPE,  # Capture standard error
+                text=True                # Decode output as string
+            )
+            logger.info(result)
+            repo_name=repo.split("/")[-1]
+            command=f'cd .. && cd codebase && cd {repo_name} && git checkout -b iacagent-hotfix'
+            result = subprocess.run(
+                command,
+                cwd=current_dir,         # Start from current_dir
+                shell=True,              # Required for using 'cd' and '&&'
+                stdout=subprocess.PIPE,  # Capture standard output
+                stderr=subprocess.PIPE,  # Capture standard error
+                text=True                # Decode output as string
+            )
+            logger.info(result)
+        
         return {}
 
     def prepare_prompt(self,state):
@@ -52,7 +73,7 @@ class Nodes():
     def agent(self,state):
         logger.info('We are in the agent node////') 
         response=[self.llm_obj.llm_with_tools.invoke(state['messages'])]
-        logger.info(f'Agent thought: {response[0].content}') 
+        logger.info(f'Agent thought: {response[0]}') 
         logger.info('Agent sleeping')
         time.sleep(10)
         logger.info('Wake up')

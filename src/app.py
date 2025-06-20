@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-
-@app.post("/launch_iac", response_model=Dict[str, str])
+@app.post("/launch_iacagent", response_model=Dict[str, str])
 def self_healing(issue: dict):
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
