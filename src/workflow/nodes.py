@@ -24,14 +24,14 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 class Nodes():
     def __init__(self):
         self.llm_obj=GoogleGen()
-        self.tools=[edit,pull_request,view,search]
+        self.tools=[edit,create_pull_request,view,search]
         self.tool_names=[func.__name__ for func in self.tools]
         self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)
     def initiate_state(self,state):
         logger.info('entering initial state')
         ## Cloning codebase
         for repo in state['github_repositories']:
-            subprocess.run(['git', 'clone', f"https://{state["github_token"]}@github.com/{repo}.git",repo], cwd=os.path.abspath(os.path.join(current_dir, "..",'codebase')), check=True) 
+            subprocess.run(['git', 'clone', f'https://{state["github_token"]}@github.com/{repo}.git',repo], cwd=os.path.abspath(os.path.join(current_dir, "..",'codebase')), check=True) 
         return {}
 
     def prepare_prompt(self,state):
@@ -52,6 +52,7 @@ class Nodes():
     def agent(self,state):
         logger.info('We are in the agent node////') 
         response=[self.llm_obj.llm_with_tools.invoke(state['messages'])]
+        logger.info(f'Agent thought: {response[0].content}') 
         logger.info('Agent sleeping')
         time.sleep(10)
         logger.info('Wake up')
