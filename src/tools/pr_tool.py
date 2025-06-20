@@ -23,9 +23,9 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
     """
     This tool is used to create a pull request for the repository that you changed.
     arguments:
-        repo_name: str : This should be the name of the repository
+        repo_name: str : This should be the name of the changed repository
         pr_title: str : Information about the problem
-        pr_body: str : Generate a well structured report to make the user understand the problem and the solution
+        pr_body: str : Generate a well structured report to make the user understand the problem and the provided solution
     """
     result=run_git_command(f"cd .. && cd codebase && cd {repo_name} && git status", current_dir)
     current_branch = result.split("\n")[0].split(" ")[2]
