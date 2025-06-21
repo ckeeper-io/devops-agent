@@ -3,6 +3,7 @@ from tools.edit_tool import *
 from tools.pr_tool import *
 from tools.view_tool import *
 from tools.search_tool import *
+from tools.terraform_tool import *
 from llm_factory.google_gen import GoogleGen
 from llm_factory.openrouter_gen import OpenrouterGen
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
@@ -23,7 +24,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 class Nodes():
     def __init__(self):
         self.llm_obj=GoogleGen()
-        self.tools=[edit,create_pull_request,view,search]
+        self.tools=[edit,create_pull_request,view,search,terraform_command_executor]
         self.tool_names=[func.__name__ for func in self.tools]
         self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)
     def initiate_state(self,state):

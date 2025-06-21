@@ -58,7 +58,7 @@ You have access to the following tools to perform your tasks:
     Effect:
     Replaces the target code window with your new_code.
 
-4. pull_request Tool
+4. create_pull_request Tool
 
     Purpose: Submit your changes via a pull request.
 
@@ -69,6 +69,16 @@ You have access to the following tools to perform your tasks:
         pr_title: str – A concise, meaningful title for the pull request.
 
         pr_body: str – A structured explanation describing the problem, your reasoning, and how your change solves it.
+
+5. terraform_command_executor tool
+    Purpose: Execute Terraform commands to manage infrastructure.
+    Inputs:
+        terrafor_command (str): The terraform command to run
+        dir_execution (str): This is the path in which the terraform operation should be executed
+
+    Output:
+        Returns the result of the Terraform command execution, including any output, errors, or status messages.
+
 
 Guidelines for Execution
     Think a step by step before making any action.

@@ -15,6 +15,10 @@ def edit(file_path:str, new_code: str, starting_line: int, ending_line:int):
         lines = file.readlines()
     if starting_line>0:
         lines[starting_line-1:ending_line] = [new_code]
+
+        for i in range(len(lines)):
+            if "\n" not in lines[i]:
+                lines[i]+="\n"
         print("/////////////:")
         print(lines)
         print("/////////////:")

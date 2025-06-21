@@ -3,6 +3,7 @@ from tools.edit_tool import *
 from tools.pr_tool import *
 from tools.view_tool import *
 from tools.search_tool import *
+from tools.terraform_tool import *
 from workflow.nodes import Nodes
 from workflow.state import State
 import requests
@@ -19,7 +20,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 class WorkFlow():
     def __init__(self):
         nodes=Nodes()
-        tools=[edit,create_pull_request,view,search]
+        tools=[edit,create_pull_request,view,search,terraform_command_executor]
         self.workflow=StateGraph(State)
         #NODES
         self.workflow.add_node('initiate_state',nodes.initiate_state)

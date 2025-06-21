@@ -23,17 +23,6 @@ def run_git(command, cwd):
         stderr=subprocess.PIPE,
         text=True
     )
-def branch_exists_local(branch, repo_path):
-    """Return True if branch exists locally."""
-    result = run_git(f"cd .. && cd codebase && cd {repo_path} && git rev-parse --verify --quiet {branch}", repo_path)
-    return result.returncode == 0
-
-def branch_exists_remote(branch, repo_path):
-    """Return True if branch exists on origin."""
-    result = run_git(f"cd .. && cd codebase && cd {repo_path} && git ls-remote --exit-code --heads origin {branch}", repo_path)
-    print(result)
-    return result.returncode == 0
-
 
 def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, InjectedState]):
     """
@@ -72,10 +61,10 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
 
         if response.status_code == 201:
             pr_url = response.json().get("html_url")
-            print(f"✅ Pull Request created: {pr_url}")
+            logger.info(f"✅ Pull Request created: {pr_url}")
         else:
-            print("❌ Failed to create pull request:")
-            print(f"Status Code: {response.status_code}")
-            print(response.json())
+            logger.info("❌ Failed to create pull request:")
+            logger.info(f"Status Code: {response.status_code}")
+            logger.info(response.json())
     except Exception as e:
         logger.error(f"Error creating pull request: {str(e)}", exc_info=True)
