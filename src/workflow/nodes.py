@@ -4,6 +4,8 @@ from tools.pr_tool import *
 from tools.view_tool import *
 from tools.search_tool import *
 from tools.terraform_tool import *
+from tools.create_file_tool import *
+from tools.list_directory_contents_tool import *
 from llm_factory.google_gen import GoogleGen
 from llm_factory.openrouter_gen import OpenrouterGen
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
@@ -24,14 +26,16 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 class Nodes():
     def __init__(self):
         self.llm_obj=GoogleGen()
-        self.tools=[edit,create_pull_request,view,search,terraform_command_executor]
+        self.tools=[edit,create_pull_request,view,search,terraform_command_executor,create_file,list_directory_contents]
         self.tool_names=[func.__name__ for func in self.tools]
         self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)
     def initiate_state(self,state):
         logger.info('entering initial state')
         ## Cloning codebase
-        for repo in state['github_repositories']:
+        github_repositories=[]
+        for repo in state['full_github_repositories']:
             logger.info(repo)
+            github_repositories.append(repo.split("/")[-1])
             command=f'cd .. && cd codebase && git clone https://{state["github_token"]}@github.com/{repo}.git'
             result = subprocess.run(
                 command,
@@ -54,7 +58,7 @@ class Nodes():
             )
             logger.info(result)
         
-        return {}
+        return {"github_repositories":github_repositories}
 
     def prepare_prompt(self,state):
         logger.info("preparing the prompt//////")
@@ -62,9 +66,12 @@ class Nodes():
             iacagent_prompt = file.read()
         system_prompt="""
             {iacagent_prompt}
-            You are provided with this tools: {tool_names} 
-        """.format(tool_names=self.tool_names,iacagent_prompt=iacagent_prompt)
-        prompt=state['query']
+            You are provided with this tools: {tool_names}
+            This is github repositories you are going to work on: {github_repositories}
+        """.format(tool_names=self.tool_names,iacagent_prompt=iacagent_prompt,github_repositories=state['github_repositories'])
+        prompt="""
+        query: {user_query}
+        """.format(user_query=state['query'])
 
         prompt=[SystemMessage(content=system_prompt),HumanMessage(content=prompt)]
         logger.info("the prompt is prepared")

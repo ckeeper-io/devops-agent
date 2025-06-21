@@ -4,6 +4,9 @@ import os
 import logging
 from pathlib import Path
 from typing import Dict
+import json
+import subprocess
+from tools.terraform_tool import *
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -32,3 +35,50 @@ def self_healing(issue: dict):
             status_code=500,
             detail=f"Failed to launch workflow: {str(e)}"
         )
+    
+
+@app.post("/test_terraform_tool")
+def test_terraform_tool(issue: dict):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(current_dir, "sa_key.json"), "w") as f:
+        json.dump(issue['sa_key'], f)
+
+    # command='export GOOGLE_APPLICATION_CREDENTIALS="../sa_key.json"'
+    # result=subprocess.run(
+    #     command,
+    #     cwd=current_dir,
+    #     shell=True,
+    #     stdout=subprocess.PIPE,
+    #     stderr=subprocess.PIPE,
+    #     text=True
+    # )
+    github_token=os.environ.get("GITHUB_TOKEN")
+    command=f'cd codebase && git clone https://{github_token}@github.com/{issue["github_repositories"][0]}.git'
+    result = subprocess.run(
+        command,
+        cwd=current_dir,         # Start from current_dir
+        shell=True,              # Required for using 'cd' and '&&'
+        stdout=subprocess.PIPE,  # Capture standard output
+        stderr=subprocess.PIPE,  # Capture standard error
+        text=True                # Decode output as string
+    )
+    # command='export GOOGLE_APPLICATION_CREDENTIALS="sa_key.json"'
+    # result=subprocess.run(
+    #     command,
+    #     cwd=current_dir,
+    #     shell=True,
+    #     stdout=subprocess.PIPE,
+    #     stderr=subprocess.PIPE,
+    #     text=True
+    # )
+    # result=terraform_command_executor("terraform plan","foundation")
+    # logger.info(result['stdout'])
+    # logger.info(result['stderr'])
+    result=terraform_command_executor("terraform init -backend-config=backend.config","foundation")
+    logger.info(result['stdout'])
+    logger.info(result['stderr'])
+
+    result=terraform_command_executor("terraform state list","foundation")
+    logger.info(result['stdout'])
+    logger.info(result['stderr'])
+    return "GOOD"

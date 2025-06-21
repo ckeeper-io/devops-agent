@@ -4,6 +4,8 @@ from tools.pr_tool import *
 from tools.view_tool import *
 from tools.search_tool import *
 from tools.terraform_tool import *
+from tools.create_file_tool import *
+from tools.list_directory_contents_tool import *
 from workflow.nodes import Nodes
 from workflow.state import State
 import requests
@@ -20,7 +22,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 class WorkFlow():
     def __init__(self):
         nodes=Nodes()
-        tools=[edit,create_pull_request,view,search,terraform_command_executor]
+        tools=[edit,create_pull_request,view,search,terraform_command_executor,create_file,list_directory_contents]
         self.workflow=StateGraph(State)
         #NODES
         self.workflow.add_node('initiate_state',nodes.initiate_state)
@@ -41,9 +43,9 @@ class WorkFlow():
         self.config={'configurable':{'thread_id':'1'}}
     def __call__(self,issue):
         github_token = os.environ.get("GITHUB_TOKEN")
-        response=self.workflow.invoke({"query":issue['query'],"github_repositories":issue['github_repositories'],"github_token":github_token},self.config)
+        response=self.workflow.invoke({"query":issue['query'],"full_github_repositories":issue['full_github_repositories'],"github_token":github_token},self.config)
         return response
-    def start_specific_node(self,state,starting_node):
+    def start_specific_node(self,state,starting_node):        
         self.workflow.set_entry_point(starting_node)
         response=self.workflow.invoke(state)
         return response

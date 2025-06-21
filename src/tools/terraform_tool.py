@@ -45,19 +45,27 @@ def terraform_command_executor(terraform_command: str, dir_execution: str):
         if 'init' in terraform_command and '-backend-config' not in terraform_command:
             return "To use init command you should always provide backend config file to get the state"
 
+  
 
-        cmd= f"cd .. && cd codebase && cd {dir_execution} && {terraform_command}"
-        
-        
+        go_back=""
+        for i in range(len(dir_execution.split('/'))+1):
+            go_back+="../"
+        cmd= f'cd .. && cd codebase && cd {dir_execution} && export GOOGLE_APPLICATION_CREDENTIALS="{go_back}sa_key.json" && {terraform_command}'
+
         # Execute the command
         result = run_command(cmd,current_dir)
-        logger.info(f"This is the result from terraform command: {result}")
-        
-        return result
+        # logger.info(f"This is the result from terraform command: {result.stdout}")
+        logger.info("out of terraform operation tool")
+        return {
+            'success': True,
+            'stdout': result.stdout,
+            'stderr': result.stderr
+        }
                 
     except Exception as e:
+        print(e)
         return {
-            'success': False,
-            'error': str(e),
-            'error_type': type(e).__name__
+            'success': True,
+            'stdout': "result.stdout",
+            'stderr': "result.stderr"
         }

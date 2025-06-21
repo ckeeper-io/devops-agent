@@ -4,6 +4,7 @@ from langgraph.graph.message import add_messages
 
 class State(TypedDict):
     query: str
-    github_repositories: str
+    full_github_repositories: list
+    github_repositories: list
     github_token: str
     messages: Annotated[list,add_messages]

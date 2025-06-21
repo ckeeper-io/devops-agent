@@ -79,6 +79,29 @@ You have access to the following tools to perform your tasks:
     Output:
         Returns the result of the Terraform command execution, including any output, errors, or status messages.
 
+6. list_directory_contents Tool
+
+    Purpose: List the contents of a specified directory.
+
+    Inputs:
+
+        dir_path: str – Path to the directory whose contents are to be listed.
+
+    Output:
+        Returns a dictionary with a key "items" containing a list of directory contents, or an error message if the operation fails.
+
+7. create_file tool
+    Purpose: Create a new file in the codebase.
+
+    Inputs:
+
+        file_path: str – Path to the new file to be created.
+
+        file_content: str – Content of the new file to be created.
+
+    Output:
+        Returns a success message if the new file was created successfully, or an error message if the operation fails.
+
 
 Guidelines for Execution
     Think a step by step before making any action.

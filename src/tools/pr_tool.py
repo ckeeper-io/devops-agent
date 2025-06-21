@@ -35,13 +35,22 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
     try:
         command=f'cd .. && cd codebase && cd {repo_name} && git add . && git commit -m "iacagent-hotfixx"'
         result = run_git(command, current_dir)
+        print('commit command')
+        print(result)
+        print("//////")
         command=f'cd .. && cd codebase && cd {repo_name} && git push --set-upstream origin iacagent-hotfix'
         result = run_git(command, current_dir)
+        print('First push command')
+        print(result)
+        print("//////")
         if result.returncode ==1:
             command=f'cd .. && cd codebase && cd {repo_name} && git push --force origin iacagent-hotfix'
             result = run_git(command, current_dir)
+            print('Second push command')
+            print(result)
+            print("//////")
         #########################################################################################
-        for repo in state['github_repositories']:
+        for repo in state['full_github_repositories']:
             if repo_name in repo:
                 repo_name_git = repo
         url = f"https://api.github.com/repos/{repo_name_git}/pulls"
