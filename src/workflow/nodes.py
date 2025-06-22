@@ -16,6 +16,7 @@ from pathlib import Path
 import shutil
 import json
 import  logging
+from jinja2 import Environment, FileSystemLoader
 
 logging.basicConfig(
     level=logging.INFO,
@@ -62,13 +63,10 @@ class Nodes():
 
     def prepare_prompt(self,state):
         logger.info("preparing the prompt//////")
-        with open(os.path.join(current_dir, "..", "prompts","iacagent_prompt.txt"), "r") as file:
-            iacagent_prompt = file.read()
-        system_prompt="""
-            {iacagent_prompt}
-            You are provided with this tools: {tool_names}
-            This is github repositories you are going to work on: {github_repositories}
-        """.format(tool_names=self.tool_names,iacagent_prompt=iacagent_prompt,github_repositories=state['github_repositories'])
+        env = Environment(loader=FileSystemLoader(os.path.join(current_dir, "..", "prompts","templates")))
+        tmpl = env.get_template("main_agent_system_prompt.jinja")
+        system_prompt=tmpl.render({"tool_names":self.tool_names,"github_repositories":state['github_repositories']})
+
         prompt="""
         query: {user_query}
         """.format(user_query=state['query'])
@@ -79,7 +77,7 @@ class Nodes():
 
 
     def agent(self,state):
-        logger.info('We are in the agent node////') 
+        logger.info('We are in the agent node////')
         response=[self.llm_obj.llm_with_tools.invoke(state['messages'])]
         logger.info(f'Agent thought: {response[0]}') 
         logger.info('Agent sleeping')

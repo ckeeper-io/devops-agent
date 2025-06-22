@@ -5,7 +5,7 @@ def create_file(file_path: str, content: str):
     This tool creates a new file in the codebase.
     arguments:
         file_path: str – Path to the new file to be created.
-        file_content: str – Content of the new file to be created.
+        content: str – Content of the new file to be created.
     """
     try:
         # Create parent directories if they don't exist
