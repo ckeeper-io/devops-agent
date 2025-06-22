@@ -26,6 +26,7 @@ class WorkFlow():
         self.workflow=StateGraph(State)
         #NODES
         self.workflow.add_node('initiate_state',nodes.initiate_state)
+        self.workflow.add_node('get_category',nodes.get_category)
         self.workflow.add_node('prepare_prompt',nodes.prepare_prompt)
         self.workflow.add_node('agent',nodes.agent)
         self.workflow.add_node('tools',ToolNode(tools))
@@ -33,7 +34,8 @@ class WorkFlow():
 
         #EDGES
         self.workflow.add_edge(START,'initiate_state')
-        self.workflow.add_edge('initiate_state','prepare_prompt')
+        self.workflow.add_edge('initiate_state','get_category')
+        self.workflow.add_edge('get_category','prepare_prompt')
         self.workflow.add_edge('prepare_prompt','agent')
         self.workflow.add_conditional_edges('agent',tools_condition,{'tools':'tools','__end__':"final_state"})
         self.workflow.add_edge('tools','agent')

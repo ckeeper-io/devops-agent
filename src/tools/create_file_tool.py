@@ -1,5 +1,11 @@
 import os
-
+import  logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+current_dir = os.path.dirname(os.path.abspath(__file__))
 def create_file(file_path: str, content: str):
     """
     This tool creates a new file in the codebase.
@@ -8,7 +14,7 @@ def create_file(file_path: str, content: str):
         content: str – Content of the new file to be created.
     """
     try:
-        # Create parent directories if they don't exist
+        file_path=os.path.abspath((os.path.join(current_dir, "..", "codebase",file_path)))
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         # Write content to the file

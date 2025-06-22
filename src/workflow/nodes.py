@@ -60,6 +60,23 @@ class Nodes():
             logger.info(result)
         
         return {"github_repositories":github_repositories}
+    def get_category(self,state):
+
+        env = Environment(loader=FileSystemLoader(os.path.join(current_dir, "..", "prompts","templates")))
+        tmpl = env.get_template("category_router_system_prompt.jinja")
+        system_prompt=tmpl.render({})
+
+        prompt="""
+        query: {query}
+        """.format(query=state['query'])
+
+        prompt=[SystemMessage(content=system_prompt),HumanMessage(content=prompt)]
+        response=self.llm_obj.llm.invoke(prompt)
+        if response.content[0]=="`":
+            response.content=response.content[7:-4]
+        response = json.loads(response.content)
+        logger.info(response['query_category'])
+        return {'query_category':response['query_category']}
 
     def prepare_prompt(self,state):
         logger.info("preparing the prompt//////")
@@ -68,8 +85,8 @@ class Nodes():
         system_prompt=tmpl.render({"tool_names":self.tool_names,"github_repositories":state['github_repositories']})
 
         prompt="""
-        query: {user_query}
-        """.format(user_query=state['query'])
+        query: {query}
+        """.format(query=state['query'])
 
         prompt=[SystemMessage(content=system_prompt),HumanMessage(content=prompt)]
         logger.info("the prompt is prepared")

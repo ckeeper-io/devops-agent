@@ -7,4 +7,5 @@ class State(TypedDict):
     full_github_repositories: list
     github_repositories: list
     github_token: str
+    query_category: str
     messages: Annotated[list,add_messages]
