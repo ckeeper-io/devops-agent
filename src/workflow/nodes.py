@@ -32,6 +32,9 @@ class Nodes():
         self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)
     def initiate_state(self,state):
         logger.info('entering initial state')
+        ## save sa_key
+        with open(os.path.join(current_dir,"..","sa_key.json"), "w") as f:
+            json.dump(state['sa_key'], f)
         ## Cloning codebase
         github_repositories=[]
         for repo in state['full_github_repositories']:
@@ -82,7 +85,7 @@ class Nodes():
         logger.info("preparing the prompt//////")
         env = Environment(loader=FileSystemLoader(os.path.join(current_dir, "..", "prompts","templates")))
         tmpl = env.get_template("main_agent_system_prompt.jinja")
-        system_prompt=tmpl.render({"tool_names":self.tool_names,"github_repositories":state['github_repositories']})
+        system_prompt=tmpl.render({"query_category":state['query_category'],"tool_names":self.tool_names,"github_repositories":state['github_repositories']})
 
         prompt="""
         query: {query}

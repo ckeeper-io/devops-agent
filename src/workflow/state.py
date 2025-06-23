@@ -8,4 +8,5 @@ class State(TypedDict):
     github_repositories: list
     github_token: str
     query_category: str
+    sa_key: dict
     messages: Annotated[list,add_messages]

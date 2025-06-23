@@ -42,10 +42,10 @@ class WorkFlow():
 
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
-        self.config={'configurable':{'thread_id':'1'}}
+        self.config={'configurable':{'thread_id':'1'},"recursion_limit": 50}
     def __call__(self,issue):
         github_token = os.environ.get("GITHUB_TOKEN")
-        response=self.workflow.invoke({"query":issue['query'],"full_github_repositories":issue['full_github_repositories'],"github_token":github_token},self.config)
+        response=self.workflow.invoke({"query":issue['query'],"full_github_repositories":issue['full_github_repositories'],"github_token":github_token,"sa_key":issue['sa_key'],"github_repositories":issue['github_repositories'],"query_category":""},self.config)
         return response
     def start_specific_node(self,state,starting_node):        
         self.workflow.set_entry_point(starting_node)

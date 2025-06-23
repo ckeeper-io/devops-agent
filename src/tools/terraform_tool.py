@@ -40,8 +40,10 @@ def terraform_command_executor(terraform_command: str, dir_execution: str):
             if op in terraform_command:
                 valid_operation=True
                 break
+        if terraform_command.split(" ")[1] == "apply":
+            valid_operation=False
         if not valid_operation:
-            raise ValueError(f"The operation in your command is not valid. Valid operations: {valid_operations}")
+            return f"The operation in your command is not valid. Valid operations: {valid_operations}"
         if 'init' in terraform_command and '-backend-config' not in terraform_command:
             return "To use init command you should always provide backend config file to get the state"
 
