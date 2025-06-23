@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-@app.post("/launch_iacagent", response_model=Dict[str, str])
-def self_healing(issue: dict):
+@app.post("/devopsagent", response_model=Dict[str, str])
+def devops_agent(issue: dict):
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         work_flow = WorkFlow()
@@ -26,7 +26,7 @@ def self_healing(issue: dict):
         work_flow.show_state()
         return {
             "status": "success",
-            "message": "iac-agent launched successfully."
+            "message": "devops agent launched successfully."
         }
         
     except Exception as e:
@@ -34,6 +34,24 @@ def self_healing(issue: dict):
         raise HTTPException(
             status_code=500,
             detail=f"Failed to launch workflow: {str(e)}"
+        )
+
+
+
+@app.post("/selfhealing", response_model=Dict[str, str])
+def self_healing(issue: dict):    
+    try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        return {
+            "status": "success",
+            "message": "selfhealing endpoint launched successfully."
+        }       
+    except Exception as e:
+        logger.error(f"Error launching selfhealing endpoint: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to launch selfhealing endpoint: {str(e)}"
         )
     
 

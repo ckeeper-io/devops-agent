@@ -51,8 +51,9 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
             print("//////")
         #########################################################################################
         for repo in state['full_github_repositories']:
-            if repo_name in repo:
-                repo_name_git = repo
+            if repo_name in repo["name"]:
+                repo_name_git = repo["name"]
+                branch=repo["branch"]
         url = f"https://api.github.com/repos/{repo_name_git}/pulls"
         
         headers = {
@@ -62,7 +63,7 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
         payload = {
             "title": pr_title,
             "head": "iacagent-hotfix",
-            "base": "main",
+            "base": branch,
             "body": pr_body
         }
 

@@ -38,9 +38,10 @@ class Nodes():
         ## Cloning codebase
         github_repositories=[]
         for repo in state['full_github_repositories']:
-            logger.info(repo)
-            github_repositories.append(repo.split("/")[-1])
-            command=f'cd .. && cd codebase && git clone https://{state["github_token"]}@github.com/{repo}.git'
+            logger.info(repo["name"])
+            repo_name=repo["name"].split("/")[-1]
+            github_repositories.append(repo_name)
+            command=f'cd .. && cd codebase && git clone --branch {repo["branch"]} https://{state["github_token"]}@github.com/{repo["name"]}.git'
             result = subprocess.run(
                 command,
                 cwd=current_dir,         # Start from current_dir
@@ -50,7 +51,6 @@ class Nodes():
                 text=True                # Decode output as string
             )
             logger.info(result)
-            repo_name=repo.split("/")[-1]
             command=f'cd .. && cd codebase && cd {repo_name} && git checkout -b iacagent-hotfix'
             result = subprocess.run(
                 command,
@@ -61,7 +61,7 @@ class Nodes():
                 text=True                # Decode output as string
             )
             logger.info(result)
-        
+         
         return {"github_repositories":github_repositories}
     def get_category(self,state):
 

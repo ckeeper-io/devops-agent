@@ -22,14 +22,13 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 class WorkFlow():
     def __init__(self):
         nodes=Nodes()
-        tools=[edit,create_pull_request,view,search,terraform_command_executor,create_file,list_directory_contents]
         self.workflow=StateGraph(State)
         #NODES
         self.workflow.add_node('initiate_state',nodes.initiate_state)
         self.workflow.add_node('get_category',nodes.get_category)
         self.workflow.add_node('prepare_prompt',nodes.prepare_prompt)
         self.workflow.add_node('agent',nodes.agent)
-        self.workflow.add_node('tools',ToolNode(tools))
+        self.workflow.add_node('tools',ToolNode(nodes.tools))
         self.workflow.add_node('final_state',nodes.final_state)
 
         #EDGES
@@ -45,7 +44,7 @@ class WorkFlow():
         self.config={'configurable':{'thread_id':'1'},"recursion_limit": 50}
     def __call__(self,issue):
         github_token = os.environ.get("GITHUB_TOKEN")
-        response=self.workflow.invoke({"query":issue['query'],"full_github_repositories":issue['full_github_repositories'],"github_token":github_token,"sa_key":issue['sa_key'],"github_repositories":issue['github_repositories'],"query_category":""},self.config)
+        response=self.workflow.invoke({"query":issue['query'],"full_github_repositories":issue['full_github_repositories'],"github_token":github_token,"sa_key":issue['sa_key'],"query_category":""},self.config)
         return response
     def start_specific_node(self,state,starting_node):        
         self.workflow.set_entry_point(starting_node)
