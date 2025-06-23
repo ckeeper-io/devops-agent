@@ -1,0 +1,42 @@
+steps:
+  # Clone the iac-agent repository
+  - name: 'gcr.io/cloud-builders/git'
+    args: ['clone', 'https://github.com/owner/iac-agent.git'] # Replace owner with the actual owner
+
+  # Clone the foundation repository
+  - name: 'gcr.io/cloud-builders/git'
+    args: ['clone', 'https://github.com/owner/foundation.git'] # Replace owner with the actual owner
+
+  # Initialize Terraform
+  - name: 'hashicorp/terraform:1.4.0'
+    dir: 'foundation/devops-agent'
+    entrypoint: 'terraform'
+    args: ['init']
+
+  # Apply Terraform configuration
+  - name: 'hashicorp/terraform:1.4.0'
+    dir: 'foundation/devops-agent'
+    entrypoint: 'terraform'
+    args: ['apply', '-auto-approve']
+
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/my-web-app:$SHORT_SHA', '.']
+
+  # Push the Docker image to GCR
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/my-web-app:$SHORT_SHA']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google-cloud-sdk/cloudsdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'my-web-app'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/my-web-app:$SHORT_SHA'
+      - '--platform'
+      - 'managed'
+      - '--region'
+      - 'us-central1' # Replace with your desired region
