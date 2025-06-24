@@ -43,7 +43,7 @@ def self_healing(info: dict):
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         logger.info("////////:")
-        logger.info(info)
+        # logger.info(info)
         logger.info("////////:")
         return {
             "status": "success",
