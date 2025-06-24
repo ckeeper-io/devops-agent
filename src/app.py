@@ -39,10 +39,12 @@ def devops_agent(issue: dict):
 
 
 @app.post("/selfhealing", response_model=Dict[str, str])
-def self_healing(issue: dict):    
+def self_healing(info: dict):    
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        
+        logger.info("////////:")
+        logger.info(info)
+        logger.info("////////:")
         return {
             "status": "success",
             "message": "selfhealing endpoint launched successfully."
