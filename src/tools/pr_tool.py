@@ -28,7 +28,7 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
     """
     This tool is used to create a pull request for the repository that you changed.
     arguments:
-        repo_name: str : This should be the name of the changed repository
+        repo_name: str : This should be the name of the changed repository, just the name of that repo folder
         pr_title: str : Information about the problem
         pr_body: str : Generate a well structured report to make the user understand the problem and the provided solution
     """
@@ -50,11 +50,14 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
             print(result)
             print("//////")
         #########################################################################################
-        for repo in state['full_github_repositories']:
-            if repo_name in repo["name"]:
-                repo_name_git = repo["name"]
+        for repo in state['codebase']:
+            if repo_name in repo["repository_url"]:
+                repo_url = repo["repository_url"]
                 branch=repo["branch"]
-        url = f"https://api.github.com/repos/{repo_name_git}/pulls"
+        repo_fullname=repo_url.split("https://github.com/")[1]
+        repo_fullname=repo_fullname.split(".git")[0]
+        logger.info(repo_fullname)
+        url = f"https://api.github.com/repos/{repo_fullname}/pulls"
         
         headers = {
             "Authorization": f"token {state['github_token']}",
