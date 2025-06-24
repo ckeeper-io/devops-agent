@@ -43,7 +43,8 @@ def self_healing(info: dict):
     try:
         logger.info("Selfhealing endpoint called")
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        logger.info(info.keys())
+        # logger.info(info['incidents'].keys())
+        logger.info(type(info['incident']))
         return {
             "status": "success",
             "message": "selfhealing endpoint launched successfully."
