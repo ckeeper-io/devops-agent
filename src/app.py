@@ -41,12 +41,9 @@ def devops_agent(issue: dict):
 @app.post("/selfhealing", response_model=Dict[str, str])
 def self_healing(info: dict):    
     try:
+        logger.info("Selfhealing endpoint called")
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        logger.info("////////:")
-        if info['error']==True: 
-            print(1 / 0)
-        else:
-            logger.info("No error, All good")
+        logger.info(info.keys())
         return {
             "status": "success",
             "message": "selfhealing endpoint launched successfully."
@@ -56,6 +53,25 @@ def self_healing(info: dict):
         raise HTTPException(
             status_code=500,
             detail=f"Failed to launch selfhealing endpoint: {str(e)}"
+        )
+    
+@app.post("/test", response_model=Dict[str, str])
+def test(info: dict):    
+    try:
+        logger.info("test endpoint called")
+        if info['error']==True: 
+            print(1 / 0)
+        else:
+            logger.info("No error, All good")
+        return {
+            "status": "success",
+            "message": "test endpoint launched successfully."
+        }       
+    except Exception as e:
+        logger.error(f"Error launching test endpoint: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to launch test endpoint: {str(e)}"
         )
     
 
