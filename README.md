@@ -1,48 +1,62 @@
 # iac-agent
 
-An intelligent agent for automating Infrastructure as Code (IaC) tasks.
+## Description
 
-## Overview
+This repository contains the code for an Infrastructure as Code (IaC) agent. The agent is designed to automate the process of managing and provisioning infrastructure using code.
 
-This repository contains the code for an IaC agent that uses a workflow graph to manage and automate infrastructure tasks. The agent can:
+## Features
 
-*   Execute Terraform commands
-*   Edit files
-*   Create pull requests
-*   Search the codebase
-*   View file contents
-*   List directory contents
+*   Automated infrastructure provisioning
+*   Support for multiple cloud providers (e.g., AWS, Azure, GCP)
+*   Integration with CI/CD pipelines
+*   Infrastructure monitoring and alerting
 
-## Architecture
+## Repository Structure
 
-The agent is built using:
-
-*   FastAPI: For the API endpoints
-*   LangGraph: For defining the workflow graph
-*   Terraform: For infrastructure provisioning
-*   GitHub: For version control and collaboration
-
-The `src` directory contains the main application code, including:
-
-*   `app.py`: The main FastAPI application
-*   `workflow/graph.py`: Defines the workflow graph
-*   `tools`: Contains various tools for interacting with Terraform, GitHub, and the file system.
+```
 
 ## Getting Started
 
-1.  Clone the repository:
+1.  **Prerequisites:**
+    *   Terraform
+    *   Python 3.6+
+    *   Cloud provider CLI (e.g., AWS CLI, Azure CLI, gcloud)
+
+2.  **Installation:**
     ```bash
-    git clone <repository_url>
-    ```
-2.  Install the dependencies:
-    ```bash
+    # Clone the repository
+    git clone https://github.com/your-username/iac-agent.git
+
+    # Navigate to the repository directory
+    cd iac-agent
+
+    # Create a virtual environment (optional)
+    python3 -m venv venv
+    source venv/bin/activate
+
+    # Install dependencies
     pip install -r requirements.txt
     ```
-3.  Run the application:
+
+3.  **Configuration:**
+    *   Configure your cloud provider credentials.
+    *   Update the `terraform.tfvars` file with your desired infrastructure settings.
+
+4.  **Usage:**
     ```bash
-    uvicorn src.app:app --reload
+    # Run the agent
+    python main.py
     ```
+
+## Contributing
+
+We welcome contributions to this project. Please follow these guidelines:
+
+*   Fork the repository.
+*   Create a new branch for your feature or bug fix.
+*   Write tests for your code.
+*   Submit a pull request.
 
 ## License
 
-[LICENSE](LICENSE)
+This project is licensed under the [License Name] License - see the `LICENSE` file for details.
