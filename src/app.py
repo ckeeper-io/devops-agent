@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Dict
 import json
 import subprocess
+import string
+import random
 from tools.terraform_tool import *
 logging.basicConfig(
     level=logging.INFO,
@@ -15,12 +17,22 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+
+
+
+def generate_random_string():
+    letters_and_digits = string.ascii_letters + string.digits
+    random_string = ''.join(random.choice(letters_and_digits) for i in range(10))
+    return random_string
 @app.post("/devopsagent", response_model=Dict[str, str])
 def devops_agent(issue: dict):
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        work_flow = WorkFlow()
-        work_flow(issue)
+        user_dir=f'run_{issue["workspace_id"]}_{generate_random_string()}'
+        folder_path = Path(os.path.join(current_dir,"tmp",user_dir,"codebase"))
+        folder_path.mkdir(parents=True, exist_ok=True)
+        work_flow = WorkFlow(user_dir=user_dir)
+        work_flow(issue=issue,user_dir=user_dir)
         
         # Log workflow state
         work_flow.show_state()

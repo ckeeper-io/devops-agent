@@ -1,6 +1,7 @@
 import subprocess
 import os
-
+from langgraph.prebuilt import InjectedState
+from typing_extensions import Annotated
 current_dir = os.path.dirname(os.path.abspath(__file__))
 def run_command(command, cwd):
     return subprocess.run(
@@ -12,25 +13,31 @@ def run_command(command, cwd):
         text=True
     )
 
-def list_directory_contents(dir_path):
+def list_directory_contents(dir_path, state: Annotated[dict, InjectedState]):
     """
-    This tool lists the contents of a directory.
+    This tool lists the contents of a directory with the number of lines for each file.
     arguments:
         dir_path: str
     """
     try:
-        command = f'cd .. && cd codebase && cd {dir_path} && ls -a'
-        # Run the `ls` command on the given directory
-        result = run_command(command, current_dir)
+        abs_dir_path = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["user_dir"], "codebase", dir_path))
+        if not os.path.isdir(abs_dir_path):
+            return {"error": f"Directory '{dir_path}' not found."}
+        
+        items = []
+        for item in os.listdir(abs_dir_path):
+            item_path = os.path.join(abs_dir_path, item)
+            if os.path.isfile(item_path):
+                with open(item_path, 'r', encoding='utf-8') as f:
+                    line_count = sum(1 for _ in f)
+                items.append(f"{item}, it has {line_count} lines")
+            else:
+                items.append(item)
 
-        # Split the output into individual items
-        items = result.stdout.strip().split('\n')
         return {
             "items": items
         }
-
-    except subprocess.CalledProcessError as e:
-        return {"error": f"Command failed: {e.stderr.strip()}"}
+        
     except FileNotFoundError:
         return {"error": f"Directory '{dir_path}' not found."}
     except Exception as e:

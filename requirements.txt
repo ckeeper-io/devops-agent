@@ -12,3 +12,10 @@ pathlib
 langgraph
 uvicorn
 Jinja2
+google-cloud-secret-manager
+google-cloud-resource-manager
+google-cloud-build
+google-auth
+google-cloud-logging
+google-cloud-iam
+google-cloud-storage

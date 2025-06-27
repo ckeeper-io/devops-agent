@@ -1,8 +1,10 @@
 import os
 import subprocess
+from langgraph.prebuilt import InjectedState
+from typing_extensions import Annotated
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-def search(query:str):
+def search(query:str,state: Annotated[dict, InjectedState]):
     """
     This tool is used to search for a code snippet in the codebase. You should a code snippet as a query.
     arguments:
@@ -11,7 +13,7 @@ def search(query:str):
     
 
     # Build the full command as a single shell string
-    command = f'cd .. && cd codebase && timeout 5s grep -rn --exclude="*.ipynb" "{query}"'
+    command = f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && timeout 5s grep -rn --exclude="*.ipynb" "{query}"'
 
     # Run the command in a shell
     result = subprocess.run(
