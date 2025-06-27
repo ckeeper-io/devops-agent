@@ -20,9 +20,11 @@ import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class WorkFlow():
-    def __init__(self):
-        nodes=Nodes()
+    def __init__(self, thread_id: str, base_dir: str):
+        nodes=Nodes(base_dir=base_dir)
         self.workflow=StateGraph(State)
+        self.thread_id = thread_id
+        self.base_dir = base_dir        self.workflow=StateGraph(State)
         #NODES
         self.workflow.add_node('initiate_state',nodes.initiate_state)
         self.workflow.add_node('get_category',nodes.get_category)
@@ -42,7 +44,7 @@ class WorkFlow():
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
         self.config={'configurable':{'thread_id':'1'},"recursion_limit": 50}
-    def __call__(self,issue):
+        response=self.workflow.invoke({"query":issue['query'],"codebase":issue['codebase'],"github_token":github_token,"sa_key_bucket_link":issue['sa_key_bucket_link'],"query_category":""},config={'configurable':{'thread_id':self.thread_id},"recursion_limit": 50})
         github_token = os.environ.get("GITHUB_TOKEN")
         response=self.workflow.invoke({"query":issue['query'],"codebase":issue['codebase'],"github_token":github_token,"sa_key_bucket_link":issue['sa_key_bucket_link'],"query_category":""},self.config)
         return response

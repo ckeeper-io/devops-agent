@@ -27,12 +27,18 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 class Nodes():
-    def __init__(self):
+    def __init__(self, base_dir: str):
+        self.base_dir = base_dir
         self.llm_obj=GoogleGen()
         self.tools=[edit,create_pull_request,view,search,terraform_command_executor,create_file,list_directory_contents,clone_repository]
         self.tool_names=[func.__name__ for func in self.tools]
-        self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)
-    def initiate_state(self,state):
+        self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)        self.llm_obj=GoogleGen()
+        logger.info('entering initial state')
+        ## save sa_key
+        sa_key_path = os.path.join(self.base_dir, "sa_key.json")
+        download_save_sakey(state["sa_key_bucket_link"], sa_key_path)
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = sa_key_path
+        return {}    def initiate_state(self,state):
         logger.info('entering initial state')
         ## save sa_key
         download_save_sakey(state["sa_key_bucket_link"])
