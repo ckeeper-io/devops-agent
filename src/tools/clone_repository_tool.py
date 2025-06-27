@@ -19,7 +19,7 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
     try:
         current_dir=os.path.dirname(os.path.abspath(__file__))
         repo_url = repo_url.replace("https://", f"https://{state['github_token']}@")
-        command=f'cd .. && cd codebase && git clone --branch {branch} {repo_url}'
+        command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && git clone --branch {branch} {repo_url}'
         result = subprocess.run(
             command,
             cwd=current_dir,         # Start from current_dir
@@ -30,7 +30,7 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
         )
         logger.info(result)
         repo_name=repo_url.split("/")[-1].split(".")[0]
-        command=f'cd .. && cd codebase && cd {repo_name} && git checkout -b iacagent-hotfix'
+        command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git checkout -b iacagent-hotfix'
         result = subprocess.run(
             command,
             cwd=current_dir,         # Start from current_dir

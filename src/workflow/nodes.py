@@ -35,7 +35,7 @@ class Nodes():
     def initiate_state(self,state):
         logger.info('entering initial state')
         ## save sa_key
-        download_save_sakey(state["sa_key_bucket_link"])
+        download_save_sakey(state["sa_key_bucket_link"],user_dir=state['user_dir'])
         return {}
     def get_category(self,state):
 

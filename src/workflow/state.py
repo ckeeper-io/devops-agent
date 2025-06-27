@@ -9,4 +9,5 @@ class State(TypedDict):
     github_token: str
     query_category: str
     sa_key_bucket_link: dict
+    user_dir: str
     messages: Annotated[list,add_messages]

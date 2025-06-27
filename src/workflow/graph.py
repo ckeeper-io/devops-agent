@@ -20,7 +20,7 @@ import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class WorkFlow():
-    def __init__(self):
+    def __init__(self,user_dir):
         nodes=Nodes()
         self.workflow=StateGraph(State)
         #NODES
@@ -41,10 +41,10 @@ class WorkFlow():
 
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
-        self.config={'configurable':{'thread_id':'1'},"recursion_limit": 50}
-    def __call__(self,issue):
+        self.config={'configurable':{'thread_id':user_dir},"recursion_limit": 50}
+    def __call__(self,issue,user_dir):
         github_token = os.environ.get("GITHUB_TOKEN")
-        response=self.workflow.invoke({"query":issue['query'],"codebase":issue['codebase'],"github_token":github_token,"sa_key_bucket_link":issue['sa_key_bucket_link'],"query_category":""},self.config)
+        response=self.workflow.invoke({"query":issue['query'],"codebase":issue['codebase'],"github_token":github_token,"sa_key_bucket_link":issue['sa_key_bucket_link'],"query_category":"","user_dir":user_dir},self.config)
         return response
     def start_specific_node(self,state,starting_node):        
         self.workflow.set_entry_point(starting_node)

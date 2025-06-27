@@ -4,6 +4,8 @@ import os        # Execute terraform command
 import subprocess
 import sys
 import logging
+from langgraph.prebuilt import InjectedState
+from typing_extensions import Annotated
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,7 +26,7 @@ def run_command(command, cwd):
         stderr=subprocess.PIPE,
         text=True
     )
-def terraform_command_executor(terraform_command: str, dir_execution: str):
+def terraform_command_executor(terraform_command: str, dir_execution: str,state: Annotated[dict, InjectedState]):
     """
     Execute Terraform command
     Args:
@@ -52,7 +54,7 @@ def terraform_command_executor(terraform_command: str, dir_execution: str):
         go_back=""
         for i in range(len(dir_execution.split('/'))+1):
             go_back+="../"
-        cmd= f'cd .. && cd codebase && cd {dir_execution} && export GOOGLE_APPLICATION_CREDENTIALS="{go_back}sa_key.json" && {terraform_command}'
+        cmd= f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {dir_execution} && export GOOGLE_APPLICATION_CREDENTIALS="{go_back}sa_key.json" && {terraform_command}'
 
         # Execute the command
         result = run_command(cmd,current_dir)

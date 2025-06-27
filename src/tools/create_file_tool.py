@@ -9,7 +9,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 current_dir = os.path.dirname(os.path.abspath(__file__))
-codebase_dir = os.path.abspath(os.path.join(current_dir, "..", "codebase"))
 
 def create_file(file_path: str, content: str,state: Annotated[dict, InjectedState]):
     """
@@ -19,6 +18,7 @@ def create_file(file_path: str, content: str,state: Annotated[dict, InjectedStat
         content: str – Content of the new file to be created.
     """
     try:
+        codebase_dir = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["user_dir"], "codebase"))
         codebase = os.listdir(codebase_dir)
         first_folder=file_path.split("/")[0]
         if first_folder not in codebase:

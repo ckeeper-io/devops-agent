@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 class GoogleGen():
     def __init__(self):
         load_dotenv()
-        self.llm=ChatGoogleGenerativeAI(model='gemini-2.0-flash')
+        self.llm=ChatGoogleGenerativeAI(model='gemini-2.5-flash',temperature=0)
     
     def __call__(self, messages):
         response=self.llm.invoke(messages)

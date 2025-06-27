@@ -33,18 +33,18 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
         pr_body: str : Generate a well structured report to make the user understand the problem and the provided solution
     """
     try:
-        command=f'cd .. && cd codebase && cd {repo_name} && git add . && git commit -m "iacagent-hotfixx"'
+        command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git add . && git commit -m "iacagent-hotfixx"'
         result = run_git(command, current_dir)
         print('commit command')
         print(result)
         print("//////")
-        command=f'cd .. && cd codebase && cd {repo_name} && git push --set-upstream origin iacagent-hotfix'
+        command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git push --set-upstream origin iacagent-hotfix'
         result = run_git(command, current_dir)
         print('First push command')
         print(result)
         print("//////")
         if result.returncode ==1:
-            command=f'cd .. && cd codebase && cd {repo_name} && git push --force origin iacagent-hotfix'
+            command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git push --force origin iacagent-hotfix'
             result = run_git(command, current_dir)
             print('Second push command')
             print(result)
