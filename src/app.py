@@ -68,7 +68,9 @@ def self_healing(info: dict):
 
                 payload=info['incident']['policy_user_labels']
                 payload['query']=f"Analyze and fix issues with resource: {resource_info}"
-                
+                ## Those value are hardcoded until the backend or database is ready 
+                payload['codebase']=[{"repository_url":"https://github.com/ckeeper-io/foundation.git","branch":"main", "metadata":"This repository contains all terraform code"},{"repository_url":"https://github.com/ckeeper-io/iac-agent.git","branch":"develop", "metadata":"In this repo we develop an agent tool"},{"repository_url":"https://github.com/ckeeper-io/agent-eval.git","branch":"main", "metadata":"In this repo we develop the evaluation"}]
+                payload['sa_key_bucket_link']="gs://sa_keys_bucket/ckeeper.json"
                 # Call the devops agent endpoint
                 devops_response = devops_agent(payload)
                 
