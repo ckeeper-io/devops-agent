@@ -55,9 +55,27 @@ def self_healing(info: dict):
     try:
         logger.info("Selfhealing endpoint called")
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        # logger.info(info['incidents'].keys())
-        logger.info(info['incident'])
-        logger.info("DONE")
+        resource_info = None
+        if 'incident' in info and 'resource' in info['incident']:
+            resource_info = info['incident']['resource']
+            logger.info(f"Resource information extracted")
+        else:
+            logger.info("No resource information found in incident")
+        
+        if resource_info:
+            try:
+                # Create a query for the devops agent
+
+                payload=info['incident']['policy_user_labels']
+                payload['query']=f"Analyze and fix issues with resource: {resource_info}"
+                ## Those value are hardcoded until the backend or database is ready 
+                payload['codebase']=[{"repository_url":"https://github.com/ckeeper-io/foundation.git","branch":"main", "metadata":"This repository contains all terraform code"},{"repository_url":"https://github.com/ckeeper-io/iac-agent.git","branch":"develop", "metadata":"In this repo we develop an agent tool"},{"repository_url":"https://github.com/ckeeper-io/agent-eval.git","branch":"main", "metadata":"In this repo we develop the evaluation"}]
+                payload['sa_key_bucket_link']="gs://sa_keys_bucket/ckeeper.json"
+                # Call the devops agent endpoint
+                devops_response = devops_agent(payload)
+                
+            except Exception as devops_error:
+                logger.error(f"Error calling devops agent: {str(devops_error)}")
         return {
             "status": "success",
             "message": "selfhealing endpoint launched successfully."
