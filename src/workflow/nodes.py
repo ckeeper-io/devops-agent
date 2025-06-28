@@ -7,6 +7,7 @@ from tools.terraform_tool import *
 from tools.create_file_tool import *
 from tools.list_directory_contents_tool import *
 from tools.clone_repository_tool import *
+from tools.retrieve_log_tool import *
 from utilis.gcp.get_sakey import download_save_sakey
 from llm_factory.google import GoogleGen
 from llm_factory.openrouter_gen import OpenrouterGen
@@ -30,7 +31,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 class Nodes():
     def __init__(self):
         self.llm_obj=GoogleGen()
-        self.tools=[edit,create_pull_request,view,search,terraform_command_executor,create_file,list_directory_contents,clone_repository]
+        self.tools=[edit,create_pull_request,view,search,terraform_command_executor,create_file,list_directory_contents,clone_repository,retrieve_logs]
         self.tool_names=[func.__name__ for func in self.tools]
         self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)
     def initiate_state(self,state):
