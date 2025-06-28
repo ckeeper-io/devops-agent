@@ -19,3 +19,4 @@ google-auth
 google-cloud-logging
 google-cloud-iam
 google-cloud-storage
+langchain-ollama
