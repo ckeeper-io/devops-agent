@@ -10,11 +10,6 @@ LLM_CONFIG = {
         "model_name": "claude-2",
         "api_key_env": "ANTHROPIC_API_KEY"
     },
-    "ollama": {
-        "provider": "ollama",
-        "model_name": "codegemma:latest",
-        "base_url": "http://localhost:11434"
-    },
     "openai": {
         "provider": "openai",
         "model_name": "gpt-3.5-turbo",
