@@ -9,6 +9,7 @@ from tools.list_directory_contents_tool import *
 from tools.clone_repository_tool import *
 from tools.retrieve_log_tool import *
 from utilis.gcp.get_sakey import download_save_sakey
+from utilis.githubapp_privatekey import *
 from llm_factory.google import GoogleGen
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
 import time
@@ -35,8 +36,9 @@ class Nodes():
     def initiate_state(self,state):
         logger.info('entering initial state')
         ## save sa_key
+        githubapp_privatekey=get_github_app_private_key(state['githubapp_privatekey_link'])
         download_save_sakey(state["sa_key_bucket_link"],user_dir=state['user_dir'])
-        return {}
+        return {"githubapp_privatekey":githubapp_privatekey}
     def get_category(self,state):
 
         env = Environment(loader=FileSystemLoader(os.path.join(current_dir, "..", "prompts","templates")))

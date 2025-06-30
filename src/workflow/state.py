@@ -6,8 +6,12 @@ class State(TypedDict):
     query: str
     codebase: list
     github_repositories: list
-    github_token: str
+    githubapp_id: str
+    githubapp_installation_id: str
+    githubapp_privatekey_link: str
+    githubapp_privatekey: str
     query_category: str
     sa_key_bucket_link: dict
     user_dir: str
+
     messages: Annotated[list,add_messages]
