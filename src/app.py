@@ -36,9 +36,11 @@ def devops_agent(issue: dict):
         
         # Log workflow state
         work_flow.show_state()
+        agent_trajectory=work_flow.messages_to_trajectory_string()
         return {
             "status": "success",
-            "message": "devops agent launched successfully."
+            "message": "devops agent launched successfully.",
+            "agent_trajectory":agent_trajectory
         }
         
     except Exception as e:

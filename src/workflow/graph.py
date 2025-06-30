@@ -16,8 +16,11 @@ from langgraph.graph import START,END,StateGraph
 from langgraph.prebuilt import ToolNode,tools_condition
 from langgraph.checkpoint.memory import MemorySaver
 import os
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
+
+
 
 class WorkFlow():
     def __init__(self,user_dir):
@@ -43,8 +46,15 @@ class WorkFlow():
         self.workflow = self.workflow.compile(checkpointer=memory)
         self.config={'configurable':{'thread_id':user_dir},"recursion_limit": 50}
     def __call__(self,issue,user_dir):
-        github_token = os.environ.get("GITHUB_TOKEN")
-        response=self.workflow.invoke({"query":issue['query'],"codebase":issue['codebase'],"github_token":github_token,"sa_key_bucket_link":issue['sa_key_bucket_link'],"query_category":"","user_dir":user_dir},self.config)
+        response=self.workflow.invoke({"query":issue['query'],
+                                       "codebase":issue['codebase'],
+                                       "githubapp_id":"1472998",
+                                       "githubapp_installation_id":issue['github_app_installation_id'],
+                                       "githubapp_privatekey_link":os.environ.get("GITHUBAPP_PRIVATE_KEY_LINK"),
+                                       "sa_key_bucket_link":issue['sa_key_bucket_link'],
+                                       "query_category":"",
+                                       "user_dir":user_dir
+                                       },self.config)
         return response
     def start_specific_node(self,state,starting_node):        
         self.workflow.set_entry_point(starting_node)
@@ -58,3 +68,31 @@ class WorkFlow():
         for m in self.workflow.get_state(self.config).values[state_name]:
             state_value_list.append(m)
         return state_value_list
+
+    def messages_to_trajectory_string(self):
+        """
+        Convert a list of messages into a string trajectory, ignoring HumanMessage and SystemMessage.
+        For AIMessage, include content and tool calls. For ToolMessage, include content and tool_call_id.
+        """
+        trajectory = []
+        for msg in self.workflow.get_state(self.config).values['messages']:
+            if isinstance(msg, (HumanMessage, SystemMessage)):
+                continue
+            elif isinstance(msg, AIMessage):
+                entry = f"AI: {msg.content}"
+                # Tool calls (if any)
+                tool_calls = getattr(msg, 'tool_calls', None)
+                if tool_calls:
+                    entry += f"\n  Tool Calls: {tool_calls}"
+                trajectory.append(entry)
+            elif isinstance(msg, ToolMessage):
+                entry = f"TOOL: {msg.content}"
+                tool_call_id = getattr(msg, 'tool_call_id', None)
+                if tool_call_id:
+                    entry += f"\n  Tool Call ID: {tool_call_id}"
+                trajectory.append(entry)
+            else:
+                # Fallback for unknown message types
+                entry = f"{type(msg).__name__}: {getattr(msg, 'content', str(msg))}"
+                trajectory.append(entry)
+        return "\n---\n".join(trajectory)

@@ -4,7 +4,8 @@ import os
 import subprocess
 import requests
 import logging
-
+import jwt
+import time
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -13,6 +14,25 @@ logger = logging.getLogger(__name__)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
+
+def get_jwt(private_key: str, app_id: str) -> str:
+    """Generate a JWT for the GitHub App using its private key."""
+    now = int(time.time())
+    payload = {"iat": now, "exp": now + 600, "iss": app_id}
+    return jwt.encode(payload, private_key, algorithm="RS256")
+
+def get_installation_token(jwt_token: str, installation_id: str) -> str:
+    """Exchange the JWT for an installation access token."""
+    url = f"https://api.github.com/app/installations/{installation_id}/access_tokens"
+    headers = {
+        "Authorization": f"Bearer {jwt_token}",
+        "Accept": "application/vnd.github+json"
+    }
+    resp = requests.post(url, headers=headers)
+    resp.raise_for_status()
+    data = resp.json()
+    return data["token"]
+                
 def run_git(command, cwd):
     """Run git command in repo_path, return CompletedProcess."""
     return subprocess.run(
@@ -33,7 +53,12 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
         pr_body: str : Generate a well structured report to make the user understand the problem and the provided solution
     """
     try:
-        command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git add . && git commit -m "iacagent-hotfixx"'
+
+        jwt_token = get_jwt(state['githubapp_privatekey'], state['githubapp_id'])
+        install_token = get_installation_token(jwt_token, state['githubapp_installation_id'])
+
+        
+        command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git add . && git commit -m "iacagent-hotfix"'
         result = run_git(command, current_dir)
         print('commit command')
         print(result)
@@ -50,6 +75,7 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
             print(result)
             print("//////")
         #########################################################################################
+        # Open PR
         for repo in state['codebase']:
             if repo_name in repo["repository_url"]:
                 repo_url = repo["repository_url"]
@@ -58,10 +84,9 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
         repo_fullname=repo_fullname.split(".git")[0]
         logger.info(repo_fullname)
         url = f"https://api.github.com/repos/{repo_fullname}/pulls"
-        
         headers = {
-            "Authorization": f"token {state['github_token']}",
-            "Accept": "application/vnd.github+json"
+        "Authorization": f"token {install_token}",
+        "Accept": "application/vnd.github+json"
         }
         payload = {
             "title": pr_title,
@@ -69,9 +94,7 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
             "base": branch,
             "body": pr_body
         }
-
         response = requests.post(url, json=payload, headers=headers)
-
         if response.status_code == 201:
             pr_url = response.json().get("html_url")
             logger.info(f"✅ Pull Request created: {pr_url}")
