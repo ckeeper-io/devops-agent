@@ -57,7 +57,7 @@ class Nodes():
         logger.info(response['query_category'])
         return {'query_category':response['query_category']}
 
-    def prepare_prompt(self,state):
+    def prepare_prompt(self,state):        
         logger.info("preparing the prompt//////")
         env = Environment(loader=FileSystemLoader(os.path.join(current_dir, "..", "prompts","templates")))
         tmpl = env.get_template("main_agent_system_prompt.jinja")

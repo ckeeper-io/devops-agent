@@ -14,9 +14,3 @@ services:
     environment:
       - GIT_USER_NAME=ckeeper-test-bot
       - GIT_USER_EMAIL=1472998+ckeeper-test-bot@users.noreply.github.com
-    networks:
-      - evaluation-network
-
-networks:
-  evaluation-network:
-    external: true
