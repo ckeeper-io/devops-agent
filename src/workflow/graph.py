@@ -16,8 +16,11 @@ from langgraph.graph import START,END,StateGraph
 from langgraph.prebuilt import ToolNode,tools_condition
 from langgraph.checkpoint.memory import MemorySaver
 import os
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
+
+
 
 class WorkFlow():
     def __init__(self,user_dir):
@@ -65,3 +68,31 @@ class WorkFlow():
         for m in self.workflow.get_state(self.config).values[state_name]:
             state_value_list.append(m)
         return state_value_list
+
+    def messages_to_trajectory_string(self):
+        """
+        Convert a list of messages into a string trajectory, ignoring HumanMessage and SystemMessage.
+        For AIMessage, include content and tool calls. For ToolMessage, include content and tool_call_id.
+        """
+        trajectory = []
+        for msg in self.workflow.get_state(self.config).values['messages']:
+            if isinstance(msg, (HumanMessage, SystemMessage)):
+                continue
+            elif isinstance(msg, AIMessage):
+                entry = f"AI: {msg.content}"
+                # Tool calls (if any)
+                tool_calls = getattr(msg, 'tool_calls', None)
+                if tool_calls:
+                    entry += f"\n  Tool Calls: {tool_calls}"
+                trajectory.append(entry)
+            elif isinstance(msg, ToolMessage):
+                entry = f"TOOL: {msg.content}"
+                tool_call_id = getattr(msg, 'tool_call_id', None)
+                if tool_call_id:
+                    entry += f"\n  Tool Call ID: {tool_call_id}"
+                trajectory.append(entry)
+            else:
+                # Fallback for unknown message types
+                entry = f"{type(msg).__name__}: {getattr(msg, 'content', str(msg))}"
+                trajectory.append(entry)
+        return "\n---\n".join(trajectory)
