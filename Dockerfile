@@ -25,7 +25,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src ./src
-COPY .env .
 
 ARG GIT_USER_NAME
 ARG GIT_USER_EMAIL
@@ -38,4 +37,4 @@ RUN git config --global user.name "$GIT_USER_NAME" && \
 
 EXPOSE 8000
 
-CMD bash -c "uvicorn app:app --host 0.0.0.0 --port 8000"
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

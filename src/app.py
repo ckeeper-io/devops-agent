@@ -18,6 +18,16 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 
+@app.get("/health")
+def health_check():
+    """Health check endpoint for the DevOps agent API."""
+    return {"status": "healthy", "message": "DevOps agent API is running"}
+
+
+@app.get("/")
+def root():
+    """Root endpoint that redirects to docs."""
+    return {"message": "DevOps Agent API", "docs": "/docs"}
 
 
 def generate_random_string():
@@ -36,7 +46,9 @@ def devops_agent(issue: dict):
         
         # Log workflow state
         work_flow.show_state()
+        
         agent_trajectory=work_flow.messages_to_trajectory_string()
+
         return {
             "status": "success",
             "message": "devops agent launched successfully.",
