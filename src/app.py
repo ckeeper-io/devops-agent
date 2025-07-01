@@ -7,6 +7,7 @@ from typing import Dict
 import json
 import subprocess
 import string
+import shutil
 import random
 from tools.terraform_tool import *
 logging.basicConfig(
@@ -18,6 +19,16 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 
+@app.get("/health")
+def health_check():
+    """Health check endpoint for the DevOps agent API."""
+    return {"status": "healthy", "message": "DevOps agent API is running"}
+
+
+@app.get("/")
+def root():
+    """Root endpoint that redirects to docs."""
+    return {"message": "DevOps Agent API", "docs": "/docs"}
 
 
 def generate_random_string():
@@ -36,7 +47,15 @@ def devops_agent(issue: dict):
         
         # Log workflow state
         work_flow.show_state()
+        
         agent_trajectory=work_flow.messages_to_trajectory_string()
+        # Delete the user_dir before ending the endpoint
+        
+        user_dir_path = Path(os.path.join(current_dir, "tmp", user_dir))
+        if user_dir_path.exists() and user_dir_path.is_dir():
+            shutil.rmtree(user_dir_path)
+            logger.info(f"Deleted user_dir: {user_dir_path}")
+
         return {
             "status": "success",
             "message": "devops agent launched successfully.",
@@ -44,6 +63,10 @@ def devops_agent(issue: dict):
         }
         
     except Exception as e:
+        user_dir_path = Path(os.path.join(current_dir, "tmp", user_dir))
+        if user_dir_path.exists() and user_dir_path.is_dir():
+            shutil.rmtree(user_dir_path)
+            logger.info(f"Deleted user_dir: {user_dir_path}")
         logger.error(f"Error launching workflow: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,

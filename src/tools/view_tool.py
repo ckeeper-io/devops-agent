@@ -1,4 +1,3 @@
-
 import os
 import subprocess
 from langgraph.prebuilt import InjectedState
@@ -7,11 +6,27 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def view(file_path: str, starting_line: int, ending_line:int,state: Annotated[dict, InjectedState]):
     """
-    This tool is used to view the contents of a file from a starting line (inclusive) to ending line (inclusive).
-    arguments:
-        file_path: str
-        starting_line: int
-        ending_line: int
+    This tool reads a file and returns a window of lines, including context about lines above and below the window. Useful for previewing code or text files without loading the entire file.
+
+    Args:
+        file_path (str): Path to the file (relative to codebase root, e.g., 'repo/main.py').
+        starting_line (int): The first line to include (1-based, inclusive).
+        ending_line (int): The last line to include (1-based, inclusive).
+
+    Returns:
+        str: The requested lines, with line numbers, and notes about lines above and below. If the starting line is less than 1, returns an error message.
+
+    Example:
+        >>> view(
+        ...     file_path='repo/main.py',
+        ...     starting_line=10,
+        ...     ending_line=20
+        ... )
+
+    Edge Cases:
+        - If starting_line < 1, returns an error.
+        - If ending_line exceeds file length, returns available lines and notes the number of lines below is zero.
+        - If the file does not exist, raises an exception.
     """
     with open(os.path.abspath(os.path.join(current_dir, "..", "tmp",state["user_dir"], "codebase", file_path)), "r") as file:
         lines = file.readlines()

@@ -13,7 +13,8 @@ steps:
     args:
       - "-c"
       - |
-        docker build -t europe-west1-docker.pkg.dev/pigen-463612/devops-agent-artifact/devops-agent:${SHORT_SHA} -t europe-west1-docker.pkg.dev/pigen-463612/devops-agent-artifact/devops-agent:latest .
+        docker compose -f docker-compose-dev.yml build
+        docker tag europe-west1-docker.pkg.dev/pigen-463612/devops-agent-artifact/devops-agent:latest europe-west1-docker.pkg.dev/pigen-463612/devops-agent-artifact/devops-agent:${SHORT_SHA}
         docker push europe-west1-docker.pkg.dev/pigen-463612/devops-agent-artifact/devops-agent:${SHORT_SHA}
         docker push europe-west1-docker.pkg.dev/pigen-463612/devops-agent-artifact/devops-agent:latest
   - id: deploy

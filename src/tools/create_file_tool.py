@@ -12,10 +12,24 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def create_file(file_path: str, content: str,state: Annotated[dict, InjectedState]):
     """
-    This tool creates a new file in the codebase.
-    arguments:
-        file_path: str – Path to the new file to be created.
-        content: str – Content of the new file to be created.
+    This tool creates a file at the given path, ensuring it is placed inside one of the allowed repositories in the codebase. It checks for directory traversal and codebase root violations.
+
+    Args:
+        file_path (str): Path to the new file (relative to codebase root, e.g., 'repo/newfile.py'). Must be inside a valid repository folder.
+        content (str): Content to write to the new file.
+
+    Returns:
+        dict: {'success': str} if the file is created, or {'error': str} with a message if creation fails or is not allowed.
+
+    Example:
+        >>> create_file(
+        ...     file_path='repo/newfile.py',
+        ...     content='print("Hello, world!")'
+        ... )
+
+    Edge Cases:
+        - If the file path is not inside a valid repo, returns an error.
+        - If the file already exists, it will be overwritten.
     """
     try:
         codebase_dir = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["user_dir"], "codebase"))

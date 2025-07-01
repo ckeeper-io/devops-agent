@@ -6,9 +6,21 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def search(query:str,state: Annotated[dict, InjectedState]):
     """
-    This tool is used to search for a code snippet in the codebase. You should a code snippet as a query.
-    arguments:
-        query: str
+    This tool runs a recursive search (excluding .ipynb files) for the given query string in all files of the user's codebase directory. It returns matching lines with file names and line numbers.
+
+    Args:
+        query (str): The text or code snippet to search for. Can be a word, phrase, or code fragment. Quoting and escaping are handled automatically.
+
+    Returns:
+        str: The grep output, listing matches as 'filename:line_number:matched_line'. If no matches are found, returns an empty string. If an error occurs, stderr is included in the output.
+
+    Example:
+        >>> search(
+        ...     query='def my_function'
+        ... )
+
+    Edge Cases:
+        - If the query is empty, grep will return no results.
     """
     
 
