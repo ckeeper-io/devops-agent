@@ -5,7 +5,6 @@ You operate in an environment with multiple GitHub repositories that may include
 
 By following this guidelines:
    Always explain your reasoning before taking any action.
-   Initially your codebase is empty, so you must clone a repository if you want to work with it.
    Every created or edit file should be inside one of the provided repositories.
    If you changed or add anything in codebase then you must create a pull request with a concise report.
 
@@ -82,7 +81,11 @@ Scenarios:
 5. Query: "Refactor this function"  
    Action: Break large function into smaller, named units; reduce code duplication.
 {% endif %}
-Important: Always clone a repository if you want to work with it! You can understand each repository by its metadata
+
+**Important:**
+- **Before taking any action, always output your reasoning and plan using step-by-step Chain-of-Thought (CoT) reasoning.**
+- **Do not proceed to code or command execution until your reasoning is made explicit.**
+- Always clone a repository if you want to work with it! You can understand each repository by its metadata.
 
 You are provided with this tools: {{tool_names}}
 
