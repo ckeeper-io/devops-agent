@@ -15,9 +15,22 @@ def run_command(command, cwd):
 
 def list_directory_contents(dir_path, state: Annotated[dict, InjectedState]):
     """
-    This tool lists the contents of a directory with the number of lines for each file.
-    arguments:
-        dir_path: str
+    This tool returns the names of files and subdirectories in the specified directory. For files, it also reports the number of lines. Useful for codebase exploration and navigation.
+
+    Args:
+        dir_path (str): Path to the directory (relative to codebase root, e.g., 'repo/').
+
+    Returns:
+        dict: {'items': list of str} with file/subdirectory names and line counts, or {'error': str} if the directory is not found or another error occurs.
+
+    Example:
+        >>> list_directory_contents(
+        ...     dir_path='repo/'
+        ... )
+
+    Edge Cases:
+        - If the directory does not exist, returns an error.
+        - If a file cannot be read, it is skipped or an error is returned.
     """
     try:
         abs_dir_path = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["user_dir"], "codebase", dir_path))

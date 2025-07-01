@@ -46,11 +46,26 @@ def run_git(command, cwd):
 
 def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, InjectedState]):
     """
-    This tool is used to create a pull request for the repository that you changed.
-    arguments:
-        repo_name: str : This should be the name of the changed repository, just the name of that repo folder
-        pr_title: str : Information about the problem
-        pr_body: str : Generate a well structured report to make the user understand the problem and the provided solution
+    This tool commits changes, pushes a new branch ('iacagent-hotfix'), and opens a pull request on GitHub with the provided title and body. It uses the GitHub App credentials from the injected state for authentication.
+
+    Args:
+        repo_name (str): The name of the changed repository (must match a folder in the codebase).
+        pr_title (str): Title for the pull request, describing the problem or change.
+        pr_body (str): Detailed body for the pull request, explaining the problem and the provided solution.
+
+    Returns:
+        None if successful. Logs the pull request URL or error details.
+
+    Example:
+        >>> create_pull_request(
+        ...     repo_name='repo',
+        ...     pr_title='Fix bug in deployment',
+        ...     pr_body='This PR fixes the deployment bug by ...'
+        ... )
+
+    Edge Cases:
+        - If the repository name is not found in the codebase, the PR cannot be created.
+        - If there are no changes to commit, git may return an error.
     """
     try:
 

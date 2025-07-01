@@ -1,4 +1,3 @@
-
 import json
 import logging
 from datetime import datetime, timedelta, UTC
@@ -203,7 +202,7 @@ def retrieve_logs(
     max_entries: int = 100,
 ) -> Dict[str, Any]:
     """
-    GCP Log Retrieval Tool.
+    Retrieve and analyze logs from Google Cloud Platform (GCP) using a service account.
 
     This tool provides log retrieval capabilities from Google Cloud Platform
     Logging service, designed specifically to analyze and understand
@@ -213,7 +212,16 @@ def retrieve_logs(
         filter_string: GCP log filter string (e.g., "resource.type=gce_instance severity>=ERROR")
     
     Returns:
-        Dictionary containing comprehensive log analysis
+        dict: Log analysis results, including period, total_entries, severity_distribution, resources_distribution, and raw_logs. If an error occurs, returns a dict with error details.
+
+    Example:
+        >>> retrieve_logs(
+        ...     filter_string='resource.type="gce_instance" severity>=ERROR',
+        ... )
+
+    Edge Cases:
+        - If the filter string is invalid, returns an error with details.
+        - If no logs match the filter, returns an empty analysis.
     """
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))

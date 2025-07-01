@@ -26,12 +26,31 @@ def run_command(command, cwd):
         stderr=subprocess.PIPE,
         text=True
     )
+
+
 def terraform_command_executor(terraform_command: str, dir_execution: str,state: Annotated[dict, InjectedState]):
     """
-    Execute Terraform command
+    This tool validates the requested Terraform operation, sets up credentials, and runs the command in the user's codebase directory. Only safe read-only operations are allowed (e.g., init, plan, validate, fmt, show, state list).
+
+    Important:
+        - For any Terraform command, you must run 'terraform init' (with the appropriate backend config) in the target directory before running other Terraform commands. This ensures the working directory is initialized and the backend is configured.
+
     Args:
-        terrafor_command (str): The terraform command to run
-        dir_execution (str): This is the path in which the terraform operation should be executed
+        terraform_command (str): The Terraform command to run (e.g., 'terraform plan', 'terraform validate'). Only certain operations are allowed. 'apply' is not permitted.
+        dir_execution (str): Path (relative to codebase root) where the Terraform command should be executed (e.g., 'repo/infra').
+
+    Returns:
+        dict: Contains 'success' (bool), 'stdout' (str), and 'stderr' (str). If the operation is invalid or an error occurs, returns an error message in 'stdout' or 'stderr'.
+
+    Example:
+        >>> terraform_command_executor(
+        ...     terraform_command='terraform plan',
+        ...     dir_execution='repo/infra'
+        ... )
+
+    Edge Cases:
+        - If the operation is not in the allowed list, returns an error.
+        - If the backend config is missing for 'init', returns an error.
     """
     try:
         logger.info("In terraform operation tool")
