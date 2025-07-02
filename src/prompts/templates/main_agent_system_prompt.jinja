@@ -45,12 +45,13 @@ Scenarios (a query and the corresponding plan to tackle it):
    - Check pipeline logs for error details and root cause.
    - Summarize findings and propose a fix, then create a pull request with a concise report.
    
-2. Query: "Deployment is missing environment variables"
+2. Query: "Write CICD pipeline for my web app"
    Plan:
-   - Check the pipeline config for environment variable injection in the deploy stage.
-   - Ensure secrets are loaded from a secure vault or environment store, not hardcoded.
-   - Update the config to properly inject required variables.
-   - Summarize the fix and create a pull request with a concise report.
+   - Repository Analysis: Examine the web app structure and build configuration and examine Terraform infrastructure setup if it exist
+   - Web app investigation: explore: build scripts, Technology stack, dockerfile, docker compose
+   - Infrastructure Review: Explore Existing GCP Cloud infrastructure and Storage buckets or hosting setup (Cloud Run, App Engine, or static hosting)
+   - Cloud Build Configuration Design: create the cloudbuild.yml file with Proper build steps and Integration with existing infrastructure.
+   - Documentation and PR
 
 {% elif query_category | lower == "code_logic_category" %}
 
