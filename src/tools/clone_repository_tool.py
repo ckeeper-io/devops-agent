@@ -34,10 +34,25 @@ def get_installation_token(jwt_token: str, installation_id: str) -> str:
 
 def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedState]):
     """
-    This tool is used to clone a repository from a given URL and branch.
-    arguments:
-        repo_url: str : This should be the URL of the repository you want to clone.
-        branch: str : This should be the branch of the repository you want to clone.
+    This tool authenticates using a GitHub App, clones the specified repository and branch into the user's codebase workspace, and checks out a new branch for hotfixes.
+
+    Args:
+        repo_url (str): The HTTPS URL of the repository to clone. Must be a valid GitHub repository URL (e.g., 'https://github.com/owner/repo.git').
+        branch (str): The branch to clone from the repository (e.g., 'main', 'develop').
+
+    Returns:
+        None if successful, or a dict with error details if cloning or checkout fails.
+
+    Example:
+        >>> clone_repository(
+        ...     repo_url='https://github.com/example/repo.git',
+        ...     branch='main'
+        ... )
+
+    Edge Cases:
+        - If the repository URL is invalid or inaccessible, returns an error dict with details.
+        - If the branch does not exist, the git command will fail and return error details.
+        - If the target directory already contains a clone, git will return an error.
     """
     try:
         jwt_token = get_jwt(state['githubapp_privatekey'], state['githubapp_id'])

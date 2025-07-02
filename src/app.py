@@ -7,6 +7,7 @@ from typing import Dict
 import json
 import subprocess
 import string
+import shutil
 import random
 from tools.terraform_tool import *
 logging.basicConfig(
@@ -48,6 +49,12 @@ def devops_agent(issue: dict):
         work_flow.show_state()
         
         agent_trajectory=work_flow.messages_to_trajectory_string()
+        # Delete the user_dir before ending the endpoint
+        
+        user_dir_path = Path(os.path.join(current_dir, "tmp", user_dir))
+        if user_dir_path.exists() and user_dir_path.is_dir():
+            shutil.rmtree(user_dir_path)
+            logger.info(f"Deleted user_dir: {user_dir_path}")
 
         return {
             "status": "success",
@@ -56,6 +63,10 @@ def devops_agent(issue: dict):
         }
         
     except Exception as e:
+        user_dir_path = Path(os.path.join(current_dir, "tmp", user_dir))
+        if user_dir_path.exists() and user_dir_path.is_dir():
+            shutil.rmtree(user_dir_path)
+            logger.info(f"Deleted user_dir: {user_dir_path}")
         logger.error(f"Error launching workflow: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
@@ -85,6 +96,7 @@ def self_healing(info: dict):
                 ## Those value are hardcoded until the backend or database is ready 
                 payload['codebase']=[{"repository_url":"https://github.com/ckeeper-io/foundation.git","branch":"main", "metadata":"This repository contains all terraform code"},{"repository_url":"https://github.com/ckeeper-io/iac-agent.git","branch":"develop", "metadata":"In this repo we develop an agent tool"},{"repository_url":"https://github.com/ckeeper-io/agent-eval.git","branch":"main", "metadata":"In this repo we develop the evaluation"}]
                 payload['sa_key_bucket_link']="gs://sa_keys_bucket/ckeeper.json"
+                payload['github_app_installation_id']="73582702"
                 # Call the devops agent endpoint
                 devops_response = devops_agent(payload)
                 
