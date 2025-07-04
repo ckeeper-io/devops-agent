@@ -8,7 +8,6 @@ class State(TypedDict):
     github_repositories: list
     githubapp_id: str
     githubapp_installation_id: str
-    githubapp_privatekey_link: str
     githubapp_privatekey: str
     query_category: str
     sa_key_bucket_link: dict

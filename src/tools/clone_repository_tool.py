@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 def get_jwt(private_key: str, app_id: str) -> str:
     """Generate a JWT for the GitHub App using its private key."""
+    logger.info("PRIVATE KEY: " + private_key)
     now = int(time.time())
     payload = {"iat": now, "exp": now + 600, "iss": app_id}
     return jwt.encode(payload, private_key, algorithm="RS256")
