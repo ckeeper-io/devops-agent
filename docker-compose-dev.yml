@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   ckeeper-agent:
-    image: europe-west1-docker.pkg.dev/pigen-463612/devops-agent-artifact/devops-agent:latest
+    image: europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:latest
     build:
       context: .
       dockerfile: Dockerfile
