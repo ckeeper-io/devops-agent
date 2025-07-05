@@ -50,7 +50,7 @@ class WorkFlow():
                                        "codebase":issue['codebase'],
                                        "githubapp_id":"1472998",
                                        "githubapp_installation_id":issue['github_app_installation_id'],
-                                       "githubapp_privatekey_link":os.environ.get("GITHUBAPP_PRIVATE_KEY_LINK"),
+                                       "githubapp_privatekey":os.environ.get("GITHUBAPP_PRIVATE_KEY"),
                                        "sa_key_bucket_link":issue['sa_key_bucket_link'],
                                        "query_category":"",
                                        "user_dir":user_dir
