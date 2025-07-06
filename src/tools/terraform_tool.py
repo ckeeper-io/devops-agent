@@ -38,7 +38,7 @@ def terraform_command_executor(terraform_command: str, dir_execution: str,state:
     Args:
         terraform_command (str): The Terraform command to run (e.g., 'terraform plan', 'terraform validate'). Only certain operations are allowed. 'apply' is not permitted.
         dir_execution (str): Path (relative to codebase root) where the Terraform command should be executed (e.g., 'repo/infra').
-
+        state: Automatically injected by the system - do not include this parameter in tool calls.
     Returns:
         dict: Contains 'success' (bool), 'stdout' (str), and 'stderr' (str). If the operation is invalid or an error occurs, returns an error message in 'stdout' or 'stderr'.
 

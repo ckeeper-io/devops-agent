@@ -19,14 +19,12 @@ def list_directory_contents(dir_path, state: Annotated[dict, InjectedState]):
 
     Args:
         dir_path (str): Path to the directory (relative to codebase root, e.g., 'repo/').
-
+        state: Automatically injected by the system - do not include this parameter in tool calls.
     Returns:
         dict: {'items': list of str} with file/subdirectory names and line counts, or {'error': str} if the directory is not found or another error occurs.
 
     Example:
-        >>> list_directory_contents(
-        ...     dir_path='repo/'
-        ... )
+        >>> list_directory_contents(dir_path='repo/')
 
     Edge Cases:
         - If the directory does not exist, returns an error.

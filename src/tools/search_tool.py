@@ -10,7 +10,7 @@ def search(query:str,state: Annotated[dict, InjectedState]):
 
     Args:
         query (str): The text or code snippet to search for. Can be a word, phrase, or code fragment. Quoting and escaping are handled automatically.
-
+        state: Automatically injected by the system - do not include this parameter in tool calls.
     Returns:
         str: The grep output, listing matches as 'filename:line_number:matched_line'. If no matches are found, returns an empty string. If an error occurs, stderr is included in the output.
 

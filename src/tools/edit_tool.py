@@ -13,7 +13,7 @@ def edit(file_path:str, new_code: str, starting_line: int, ending_line:int,state
         new_code (str): The code to insert in place of the specified lines.
         starting_line (int): The first line to replace (1-based, inclusive).
         ending_line (int): The last line to replace (1-based, inclusive).
-
+        state: Automatically injected by the system - do not include this parameter in tool calls.
     Returns:
         str: Success message if the edit is applied, or an error message if starting_line < 1 or another error occurs.
 
@@ -30,6 +30,8 @@ def edit(file_path:str, new_code: str, starting_line: int, ending_line:int,state
         - If ending_line exceeds file length, only available lines are replaced.
         - If the file does not exist, raises an exception.
     """
+    starting_line = int(starting_line)
+    ending_line = int(ending_line)
     with open(os.path.abspath(os.path.join(current_dir, "..", "tmp", state["user_dir"], "codebase", file_path)), "r") as file:
         lines = file.readlines()
     if starting_line>0:
