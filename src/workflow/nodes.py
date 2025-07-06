@@ -112,7 +112,7 @@ class Nodes():
         ]
         clear_messages = [RemoveMessage(id=msg.id) for msg in state['executor_messages']]
         
-        return {"executor_messages": clear_messages + executor_messages,"replan":"true","current_plan":response.content,"previous_plans":response.content,"current_cycle":0}
+        return {"executor_messages": clear_messages + executor_messages,"replan":"true","current_plan":response.content,"previous_plans":response.content,"current_cycle":0,"input_tokens":response.usage_metadata["input_tokens"]+state['input_tokens'],"output_tokens":response.usage_metadata["output_tokens"]+state['output_tokens']}
     
     def executor(self, state):
         """
@@ -123,6 +123,8 @@ class Nodes():
         logger.info(f'{len(state["executor_messages"])}')
         logger.info(f'{len(state["messages"])}')
         logger.info("------------------------------------------")
+        logger.info(f"INPUT_TOKENS:-------->{state['input_tokens']}")
+        logger.info(f"OUTPUT_TOKENS:------->{state['output_tokens']}")
         if isinstance(state['executor_messages'][-1], ToolMessage):
             logger.info(f"TOOL RESPONSE: {state['executor_messages'][-1].content}")
         if state["current_cycle"]<state["max_cycle_executor"]:
@@ -137,7 +139,7 @@ class Nodes():
         logger.info('Agent sleeping')
         time.sleep(10)
         logger.info('Wake up')
-        return {"executor_messages":response,"messages":response,"current_cycle":state['current_cycle']+1}
+        return {"executor_messages":response,"messages":response,"current_cycle":state['current_cycle']+1,"input_tokens":response[0].usage_metadata["input_tokens"]+state["input_tokens"],"output_tokens":response[0].usage_metadata["output_tokens"]+state["output_tokens"]}
     
     def planner_decision(self, state):
         """
