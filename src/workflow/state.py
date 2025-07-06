@@ -19,4 +19,6 @@ class State(TypedDict):
     max_cycle_executor: int
     previous_plans: Annotated[list,add_messages]
     executor_messages: Annotated[list,add_messages]
+    input_tokens: int
+    output_tokens: int
     messages: Annotated[list,add_messages]
