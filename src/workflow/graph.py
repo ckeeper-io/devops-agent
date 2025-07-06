@@ -101,7 +101,7 @@ class WorkFlow():
                                        "query_category":"",
                                        "user_dir":user_dir,
                                        "current_cycle":0,
-                                       "max_cycle_executor":5,
+                                       "max_cycle_executor":500,
                                        "replan": "false"
                                        },self.config)
         return response

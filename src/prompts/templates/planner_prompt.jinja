@@ -44,6 +44,9 @@ handle translating these high-level but precise steps into the necessary
 sequence of actions.
 - To use terraform commands, you should first locate the backend config to retrieve terraform state and 
 use "terraform init -backend-config=backend_file" 
+- The executor CANNOT execute `terraform apply` commands. All infrastructure changes, 
+file creations, and modifications must be done through pull requests. The user will review and apply 
+the changes manually after the pull request is created.
 - If you changed or add anything in codebase then you must create a pull request with a concise report.
 
 ## Completion Assessment:

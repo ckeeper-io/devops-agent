@@ -12,6 +12,13 @@ high-level action that you need to take. Since this Global Plan
 encapsulates the entire task flow, you should identify where you are in the
 plan and then decide on the next action to take.
 
+## Guidelines:
+- You CANNOT execute `terraform apply` commands. All infrastructure changes, 
+file creations, and modifications must be done through pull requests. The user will review and apply 
+the changes manually after the pull request is created.
+
+
+
 ## Important: When to Stop and Replan
 If at any point during execution you feel that:
 - The current plan is not feasible or cannot be completed as designed
@@ -22,7 +29,7 @@ If at any point during execution you feel that:
 1. Clearly explain why you believe the plan is not feasible or why you are stuck
 2. Provide specific details about what went wrong or what assumptions were incorrect
 3. Suggest that a new plan needs to be created to address these issues
-4. Request the user to trigger a replanning process
+4. Request a replanning process
 
 Do not continue attempting to execute a plan that you believe cannot succeed.
 
