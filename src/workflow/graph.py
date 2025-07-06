@@ -101,7 +101,7 @@ class WorkFlow():
                                        "query_category":"",
                                        "user_dir":user_dir,
                                        "current_cycle":0,
-                                       "max_cycle_executor":30,
+                                       "max_cycle_executor":2,
                                        "input_tokens":0,
                                        "output_tokens":0,
                                        "replan": "false"
