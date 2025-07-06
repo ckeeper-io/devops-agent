@@ -210,7 +210,7 @@ def retrieve_logs(
     
     Args:
         filter_string: GCP log filter string (e.g., "resource.type=gce_instance severity>=ERROR")
-    
+        state: Automatically injected by the system - do not include this parameter in tool calls.
     Returns:
         dict: Log analysis results, including period, total_entries, severity_distribution, resources_distribution, and raw_logs. If an error occurs, returns a dict with error details.
 

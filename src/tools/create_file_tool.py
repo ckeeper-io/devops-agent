@@ -17,7 +17,7 @@ def create_file(file_path: str, content: str,state: Annotated[dict, InjectedStat
     Args:
         file_path (str): Path to the new file (relative to codebase root, e.g., 'repo/newfile.py'). Must be inside a valid repository folder.
         content (str): Content to write to the new file.
-
+        state: Automatically injected by the system - do not include this parameter in tool calls.
     Returns:
         dict: {'success': str} if the file is created, or {'error': str} with a message if creation fails or is not allowed.
 

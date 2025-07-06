@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 def get_jwt(private_key: str, app_id: str) -> str:
     """Generate a JWT for the GitHub App using its private key."""
-    logger.info("PRIVATE KEY: " + private_key)
     now = int(time.time())
     payload = {"iat": now, "exp": now + 600, "iss": app_id}
     return jwt.encode(payload, private_key, algorithm="RS256")
@@ -40,9 +39,11 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
     Args:
         repo_url (str): The HTTPS URL of the repository to clone. Must be a valid GitHub repository URL (e.g., 'https://github.com/owner/repo.git').
         branch (str): The branch to clone from the repository (e.g., 'main', 'develop').
+        state: Automatically injected by the system - do not include this parameter in tool calls.
+
 
     Returns:
-        None if successful, or a dict with error details if cloning or checkout fails.
+        successful message, or a dict with error details if cloning or checkout fails.
 
     Example:
         >>> clone_repository(
@@ -82,7 +83,7 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
             text=True                # Decode output as string
         )
         logger.info(result2)
-        # Optionally, return success info here
+        return "Successfully cloned the repository!"
     except Exception as e:
         logger.error(f"Exception occurred: {type(e).__name__}: {e}", exc_info=True)
         error_details = {
