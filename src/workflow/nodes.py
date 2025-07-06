@@ -136,6 +136,7 @@ class Nodes():
         if len(state['executor_messages'])>2 and state['executor_messages'][-2].additional_kwargs==response[0].additional_kwargs:
             logger.info(f'Same call tool!')
             response=[AIMessage(content="Alright, What do you think?")]
+            return {"executor_messages":response,"messages":response,"current_cycle":state['current_cycle']+1}
         logger.info('Agent sleeping')
         time.sleep(10)
         logger.info('Wake up')
