@@ -131,6 +131,7 @@ class Nodes():
             response=[self.llm_obj.llm_with_tools.invoke(state['executor_messages'])]
         else:
             response=[AIMessage(content="Alright, What do you think?")]
+            return {"executor_messages":response,"messages":response,"current_cycle":state['current_cycle']+1}
         logger.info(f'executor agent thought: {response[0].content}\n')
         logger.info(f'executor agent call tools: {response[0].additional_kwargs}\n\n') 
         if len(state['executor_messages'])>2 and state['executor_messages'][-2].additional_kwargs==response[0].additional_kwargs:
