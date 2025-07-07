@@ -56,18 +56,15 @@ class Nodes():
                 if tool_call_id:
                     entry += f"\n  Tool Call ID: {tool_call_id}"
                 trajectory.append(entry)
-            else:
-                # Fallback for unknown message types
-                entry = f"{type(msg).__name__}: {getattr(msg, 'content', str(msg))}"
-                trajectory.append(entry)
-        return {"previous_steps_actions":["\n---\n".join(trajectory)]}
+        logger.info(f"This the trajectory: {trajectory}")
+        return {"previous_steps_actions":state["previous_steps_actions"]+["\n---\n".join(trajectory)]}
     def planner(self, state):
         """
         Planner node that analyzes the query and creates a plan for execution.
         Uses the LLM to generate a step-by-step plan based on the user query.
         """
         logger.info('entering planner state')
-        
+        logger.info(f'This previous steps and actions: {state.get("previous_steps_actions",[" "])}')
         ### PLANNER
         # Load the system prompt template
         env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
@@ -76,10 +73,10 @@ class Nodes():
         # Render the system prompt with the current state
         system_prompt = template.render(
             codebase=state['codebase'],
-            previous_steps_actions="\n".join(state.get('previous_steps_actions',[])),
+            previous_steps_actions="\n".join(state.get('previous_steps_actions',[" "])),
             tool_names=self.tool_names
         )
-        # logger.info(f"PLANNER SYSTEM PROMPT\n {system_prompt}\n\n")
+        logger.info(f"PLANNER SYSTEM PROMPT\n {system_prompt}\n\n")
         
         # Create messages for the planner
         messages = [
@@ -100,7 +97,7 @@ class Nodes():
         system_prompt = template.render(
             codebase=state['codebase'],
             tool_names=self.tool_names,
-            previous_steps_actions="\n".join(state.get('previous_steps_actions',[])),
+            previous_steps_actions="\n".join(state.get('previous_steps_actions',[" "])),
             current_step=response.content
         )
         # logger.info(f"Executor SYSTEM PROMPT\n {system_prompt}\n\n")
@@ -110,7 +107,7 @@ class Nodes():
         ]
         clear_messages = [RemoveMessage(id=msg.id) for msg in state['executor_messages']]
         
-        return {"executor_messages": clear_messages + executor_messages,"previous_steps_actions":[f"STEP: \n{response.content}"],"current_step":response.content,"current_cycle":0,"input_tokens":response.usage_metadata["input_tokens"]+state['input_tokens'],"output_tokens":response.usage_metadata["output_tokens"]+state['output_tokens']}
+        return {"executor_messages": clear_messages + executor_messages,"previous_steps_actions":state.get('previous_steps_actions',[])+[f"STEP: \n{response.content}"],"current_step":response.content,"current_cycle":0,"input_tokens":response.usage_metadata["input_tokens"]+state['input_tokens'],"output_tokens":response.usage_metadata["output_tokens"]+state['output_tokens']}
     
     def executor(self, state):
         """
@@ -120,6 +117,7 @@ class Nodes():
         logger.info('entering executor state')
         logger.info(f'{len(state["executor_messages"])}')
         logger.info(f'{len(state["messages"])}')
+        logger.info(f'This previous steps and actions: {state.get("previous_steps_actions",[" "])}')
         logger.info("------------------------------------------")
         logger.info(f"INPUT_TOKENS:-------->{state['input_tokens']}")
         logger.info(f"OUTPUT_TOKENS:------->{state['output_tokens']}")
