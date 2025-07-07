@@ -21,6 +21,53 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 
+def custom_tool_node(state):
+    """
+    Custom tool node that executes tools and returns responses in executor_messages field
+    instead of messages field.
+    """
+    # Get the last message which should be an AIMessage with tool calls
+    last_message = state['executor_messages'][-1]
+    
+    if not hasattr(last_message, 'tool_calls') or not last_message.tool_calls:
+        return {}
+    
+    # Execute each tool call
+    tool_messages = []
+    for tool_call in last_message.tool_calls:
+        tool_name = tool_call['name']
+        tool_args = tool_call['args']
+        
+        # Find the tool function
+        tool_func = None
+        for tool in Nodes().tools:
+            if tool.__name__ == tool_name:
+                tool_func = tool
+                break
+        
+        if tool_func:
+            try:
+                # Filter out 'state' from tool_args since it's injected automatically
+                filtered_args = {k: v for k, v in tool_args.items() if k != 'state'}
+                # Execute the tool with the state
+                result = tool_func(**filtered_args, state=state)
+                # Create a ToolMessage
+                tool_message = ToolMessage(
+                    content=str(result),
+                    tool_call_id=tool_call['id']
+                )
+                tool_messages.append(tool_message)
+            except Exception as e:
+                # Create an error ToolMessage
+                error_message = ToolMessage(
+                    content=f"Error executing {tool_name}: {str(e)}",
+                    tool_call_id=tool_call['id']
+                )
+                tool_messages.append(error_message)
+    
+    # Return the tool messages in executor_messages field
+    return {"executor_messages": tool_messages,'messages':tool_messages}
+
 
 class WorkFlow():
     def __init__(self,user_dir):
@@ -28,23 +75,22 @@ class WorkFlow():
         self.workflow=StateGraph(State)
         #NODES
         self.workflow.add_node('initiate_state',nodes.initiate_state)
-        self.workflow.add_node('get_category',nodes.get_category)
-        self.workflow.add_node('prepare_prompt',nodes.prepare_prompt)
-        self.workflow.add_node('agent',nodes.agent)
-        self.workflow.add_node('tools',ToolNode(nodes.tools))
+        self.workflow.add_node('preplanner',nodes.preplanner)
+        self.workflow.add_node('planner',nodes.planner)
+        self.workflow.add_node('executor',nodes.executor)
+        self.workflow.add_node('tools',custom_tool_node)
         self.workflow.add_node('final_state',nodes.final_state)
 
         #EDGES
         self.workflow.add_edge(START,'initiate_state')
-        self.workflow.add_edge('initiate_state','get_category')
-        self.workflow.add_edge('get_category','prepare_prompt')
-        self.workflow.add_edge('prepare_prompt','agent')
-        self.workflow.add_conditional_edges('agent',tools_condition,{'tools':'tools','__end__':"final_state"})
-        self.workflow.add_edge('tools','agent')
-
+        self.workflow.add_edge('initiate_state','planner')
+        self.workflow.add_conditional_edges('planner',nodes.planner_decision,{'executor':'executor','__end__':"final_state"})
+        self.workflow.add_conditional_edges('executor',tools_condition,{'tools':'tools','__end__':"preplanner"})
+        self.workflow.add_edge('tools','executor')
+        self.workflow.add_edge('preplanner','planner')
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
-        self.config={'configurable':{'thread_id':user_dir},"recursion_limit": 50}
+        self.config={'configurable':{'thread_id':user_dir},"recursion_limit": 5000}
     def __call__(self,issue,user_dir):
         response=self.workflow.invoke({"query":issue['query'],
                                        "codebase":issue['codebase'],
@@ -53,7 +99,11 @@ class WorkFlow():
                                        "githubapp_privatekey":os.environ.get("GITHUBAPP_PRIVATE_KEY"),
                                        "sa_key_bucket_link":issue['sa_key_bucket_link'],
                                        "query_category":"",
-                                       "user_dir":user_dir
+                                       "user_dir":user_dir,
+                                       "current_cycle":0,
+                                       "max_cycle_executor":3,
+                                       "input_tokens":0,
+                                       "output_tokens":0,
                                        },self.config)
         return response
     def start_specific_node(self,state,starting_node):        

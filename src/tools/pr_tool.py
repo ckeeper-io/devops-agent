@@ -52,7 +52,7 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
         repo_name (str): The name of the changed repository (must match a folder in the codebase).
         pr_title (str): Title for the pull request, describing the problem or change.
         pr_body (str): Detailed body for the pull request, explaining the problem and the provided solution.
-
+        state: Automatically injected by the system - do not include this parameter in tool calls.
     Returns:
         None if successful. Logs the pull request URL or error details.
 
