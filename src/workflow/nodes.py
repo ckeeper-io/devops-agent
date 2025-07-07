@@ -76,7 +76,7 @@ class Nodes():
         # Render the system prompt with the current state
         system_prompt = template.render(
             codebase=state['codebase'],
-            previous_steps_actions=state.get('previous_steps_actions',[]),
+            previous_steps_actions="\n".join(state.get('previous_steps_actions',[])),
             tool_names=self.tool_names
         )
         # logger.info(f"PLANNER SYSTEM PROMPT\n {system_prompt}\n\n")
@@ -100,7 +100,7 @@ class Nodes():
         system_prompt = template.render(
             codebase=state['codebase'],
             tool_names=self.tool_names,
-            previous_steps_actions=state.get('previous_steps_actions',[]),
+            previous_steps_actions="\n".join(state.get('previous_steps_actions',[])),
             current_step=response.content
         )
         # logger.info(f"Executor SYSTEM PROMPT\n {system_prompt}\n\n")
