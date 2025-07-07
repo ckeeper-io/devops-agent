@@ -2,7 +2,7 @@
 
 ## Description
 
-This repository contains the code for an Infrastructure as Code (IaC) agent. The agent is designed to automate the process of managing and provisioning infrastructure using code.
+This repository contains the code for an Infrastructure as Code (IaC) agent. The agent is designed to automate the process of managing and provisioning infrastructure using code
 
 ## Features
 
