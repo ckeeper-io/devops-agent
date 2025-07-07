@@ -81,7 +81,7 @@ def self_healing(info: dict):
         logger.info("Selfhealing endpoint called")
         current_dir = os.path.dirname(os.path.abspath(__file__))
         resource_info = None
-        logger.info(f"This is the info:\n{resource_info}\n\n")
+        logger.info(f"This is the info:\n{info}\n\n")
         if 'incident' in info and 'resource' in info['incident']:
             resource_info = info['incident']['resource']
             logger.info(f"Resource information extracted")
