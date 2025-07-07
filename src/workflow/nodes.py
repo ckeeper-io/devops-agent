@@ -74,7 +74,6 @@ class Nodes():
             previous_steps_actions="\n".join(state.get('previous_steps_actions',[" "])),
             tool_names=self.tool_names
         )
-        logger.info(f"PLANNER SYSTEM PROMPT\n {system_prompt}\n\n")
         
         # Create messages for the planner
         messages = [
