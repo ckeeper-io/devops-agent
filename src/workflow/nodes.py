@@ -56,7 +56,6 @@ class Nodes():
                 if tool_call_id:
                     entry += f"\n  Tool Call ID: {tool_call_id}"
                 trajectory.append(entry)
-        logger.info(f"This the trajectory: {trajectory}")
         return {"previous_steps_actions":state["previous_steps_actions"]+["\n---\n".join(trajectory)]}
     def planner(self, state):
         """
@@ -64,7 +63,6 @@ class Nodes():
         Uses the LLM to generate a step-by-step plan based on the user query.
         """
         logger.info('entering planner state')
-        logger.info(f'This previous steps and actions: {state.get("previous_steps_actions",[" "])}')
         ### PLANNER
         # Load the system prompt template
         env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
@@ -117,7 +115,6 @@ class Nodes():
         logger.info('entering executor state')
         logger.info(f'{len(state["executor_messages"])}')
         logger.info(f'{len(state["messages"])}')
-        logger.info(f'This previous steps and actions: {state.get("previous_steps_actions",[" "])}')
         logger.info("------------------------------------------")
         logger.info(f"INPUT_TOKENS:-------->{state['input_tokens']}")
         logger.info(f"OUTPUT_TOKENS:------->{state['output_tokens']}")
