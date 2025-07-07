@@ -94,11 +94,33 @@ def self_healing(info: dict):
                 payload=info['incident']['policy_user_labels']
                 payload['query']=f"Analyze and fix issues with resource: {resource_info}"
                 ## Those value are hardcoded until the backend or database is ready 
-                payload['codebase']=[{"repository_url":"https://github.com/ckeeper-io/foundation.git","branch":"main", "metadata":"This repository contains all terraform code"},{"repository_url":"https://github.com/ckeeper-io/iac-agent.git","branch":"develop", "metadata":"In this repo we develop an agent tool"},{"repository_url":"https://github.com/ckeeper-io/agent-eval.git","branch":"main", "metadata":"In this repo we develop the evaluation"}]
+                payload['codebase']=[
+                    {
+                        "repository_url":"https://github.com/ckeeper-io/foundation.git",
+                        "branch":"develop", 
+                        "metadata":"This repository contains all terraform code"
+                    },
+                    {
+                        "repository_url":"https://github.com/ckeeper-io/iac-agent.git",
+                        "branch":"develop",
+                        "metadata":"In this repo we develop an agent tool"
+                    },
+                    {
+                        "repository_url":"https://github.com/ckeeper-io/backend-js.git",
+                        "branch":"develop",
+                        "metadata":"Nest framework TypeScript starter repository."
+                    },
+                    {
+                        "repository_url":"https://github.com/ckeeper-io/webapp.git",
+                        "branch":"develop",
+                        "metadata":"Frontend app"
+                    }
+                ]
                 payload['sa_key_bucket_link']="gs://sa_keys_bucket/ckeeper.json"
-                payload['github_app_installation_id']="73582702"
+                payload['github_app_installation_id']="74312314"
                 # Call the devops agent endpoint
-                devops_response = devops_agent(payload)
+                # devops_response = devops_agent(payload)
+                logger.info(f'This is the payload that will be passed to devops agent:\n{payload}')
                 
             except Exception as devops_error:
                 logger.error(f"Error calling devops agent: {str(devops_error)}")
