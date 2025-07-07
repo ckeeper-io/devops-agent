@@ -90,7 +90,7 @@ def self_healing(info: dict):
         if resource_info:
             try:
                 # Create a query for the devops agent
-
+                logger.info(f"This is the resource info:\n{resource_info}\n\n")
                 payload=info['incident']['policy_user_labels']
                 payload['query']=f"Analyze and fix issues with resource: {resource_info}"
                 ## Those value are hardcoded until the backend or database is ready 
