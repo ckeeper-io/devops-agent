@@ -90,7 +90,7 @@ class WorkFlow():
         self.workflow.add_edge('preplanner','planner')
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
-        self.config={'configurable':{'thread_id':user_dir},"recursion_limit": 50}
+        self.config={'configurable':{'thread_id':user_dir},"recursion_limit": 5000}
     def __call__(self,issue,user_dir):
         response=self.workflow.invoke({"query":issue['query'],
                                        "codebase":issue['codebase'],
@@ -104,7 +104,6 @@ class WorkFlow():
                                        "max_cycle_executor":3,
                                        "input_tokens":0,
                                        "output_tokens":0,
-                                       "replan": "false"
                                        },self.config)
         return response
     def start_specific_node(self,state,starting_node):        

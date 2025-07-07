@@ -12,12 +12,10 @@ class State(TypedDict):
     query_category: str
     sa_key_bucket_link: dict
     user_dir: str
-    replan: str
-    current_plan: str
-    previous_actions: str
+    current_step: str
+    previous_steps_actions: Annotated[list,add_messages]
     current_cycle: int
     max_cycle_executor: int
-    previous_plans: Annotated[list,add_messages]
     executor_messages: Annotated[list,add_messages]
     input_tokens: int
     output_tokens: int
