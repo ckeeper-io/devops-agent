@@ -10,6 +10,7 @@ import string
 import shutil
 import random
 from tools.terraform_tool import *
+from fastapi.middleware.cors import CORSMiddleware
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -18,6 +19,18 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+# List of allowed origins (for example, frontend URLs)
+origins = [
+    "*",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,            # Origins that are allowed to make requests
+    allow_credentials=True,
+    allow_methods=["*"],              # Allow all HTTP methods: GET, POST, PUT, DELETE, etc.
+    allow_headers=["*"],              # Allow all headers
+)
 
 @app.get("/health")
 def health_check():
