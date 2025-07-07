@@ -39,8 +39,8 @@ class Nodes():
         download_save_sakey(state["sa_key_bucket_link"],user_dir=state['user_dir'])
         return {}
     def preplanner(self,state):
-        trajectory = []
-        for msg in state['messages']:
+        trajectory = ["Executor Actions: \n"]
+        for msg in state['executor_messages']:
             if isinstance(msg, (HumanMessage, SystemMessage)):
                 continue
             elif isinstance(msg, AIMessage):
@@ -60,7 +60,7 @@ class Nodes():
                 # Fallback for unknown message types
                 entry = f"{type(msg).__name__}: {getattr(msg, 'content', str(msg))}"
                 trajectory.append(entry)
-        return {"previous_actions":"\n---\n".join(trajectory)}
+        return {"previous_steps_actions":["\n---\n".join(trajectory)]}
     def planner(self, state):
         """
         Planner node that analyzes the query and creates a plan for execution.
@@ -76,9 +76,7 @@ class Nodes():
         # Render the system prompt with the current state
         system_prompt = template.render(
             codebase=state['codebase'],
-            replan=state['replan'],
-            previous_actions=state.get('previous_actions',[]),
-            previous_plans=state.get('previous_plans',[]),
+            previous_steps_actions=state.get('previous_steps_actions',[]),
             tool_names=self.tool_names
         )
         # logger.info(f"PLANNER SYSTEM PROMPT\n {system_prompt}\n\n")
@@ -91,7 +89,7 @@ class Nodes():
         
         # Get response from LLM
         response = self.llm_obj.llm.invoke(messages)
-        logger.info(f"CURRENT PLAN\n {response.content}\n\n")
+        logger.info(f"CURRENT TASK\n {response.content}\n\n")
 
         ### EXECUTOR
         # Load the system prompt template
@@ -102,8 +100,8 @@ class Nodes():
         system_prompt = template.render(
             codebase=state['codebase'],
             tool_names=self.tool_names,
-            previous_actions=state.get('previous_actions',[]),
-            global_plan=response.content
+            previous_steps_actions=state.get('previous_steps_actions',[]),
+            current_step=response.content
         )
         # logger.info(f"Executor SYSTEM PROMPT\n {system_prompt}\n\n")
         executor_messages= [
@@ -112,7 +110,7 @@ class Nodes():
         ]
         clear_messages = [RemoveMessage(id=msg.id) for msg in state['executor_messages']]
         
-        return {"executor_messages": clear_messages + executor_messages,"replan":"true","current_plan":response.content,"previous_plans":response.content,"current_cycle":0,"input_tokens":response.usage_metadata["input_tokens"]+state['input_tokens'],"output_tokens":response.usage_metadata["output_tokens"]+state['output_tokens']}
+        return {"executor_messages": clear_messages + executor_messages,"previous_steps_actions":[f"STEP: \n{response.content}"],"current_step":response.content,"current_cycle":0,"input_tokens":response.usage_metadata["input_tokens"]+state['input_tokens'],"output_tokens":response.usage_metadata["output_tokens"]+state['output_tokens']}
     
     def executor(self, state):
         """
@@ -150,7 +148,7 @@ class Nodes():
         """
         logger.info('making planner decision')
         
-        if state['current_plan'].lower()=="done":
+        if state['current_step'].lower()=="done":
                 return '__end__'
         
         return "executor"
