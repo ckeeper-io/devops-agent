@@ -13,7 +13,7 @@ class State(TypedDict):
     sa_key_bucket_link: dict
     user_dir: str
     current_step: str
-    previous_steps_actions: Annotated[list,add_messages]
+    previous_steps_actions: list
     current_cycle: int
     max_cycle_executor: int
     executor_messages: Annotated[list,add_messages]
