@@ -197,7 +197,7 @@ class Nodes():
         env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
         template = env.get_template('summarizer_prompt.jinja')
         
-        system_prompt = template.render()
+        system_prompt = template.render(user_query=state['query'])
         messages = [SystemMessage(content=system_prompt),
                     HumanMessage(content=f"Planner Actions and Decisions:\n{state.get('previous_steps_actions', '')}\n")] 
         response = self.llm_obj.llm.invoke(messages)
