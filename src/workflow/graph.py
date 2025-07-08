@@ -75,19 +75,25 @@ class WorkFlow():
         self.workflow=StateGraph(State)
         #NODES
         self.workflow.add_node('initiate_state',nodes.initiate_state)
+        self.workflow.add_node('chatbot',nodes.chatbot)
         self.workflow.add_node('preplanner',nodes.preplanner)
         self.workflow.add_node('planner',nodes.planner)
         self.workflow.add_node('executor',nodes.executor)
         self.workflow.add_node('tools',custom_tool_node)
+        self.workflow.add_node('summarizer',nodes.summarizer)
         self.workflow.add_node('final_state',nodes.final_state)
 
         #EDGES
         self.workflow.add_edge(START,'initiate_state')
-        self.workflow.add_edge('initiate_state','planner')
-        self.workflow.add_conditional_edges('planner',nodes.planner_decision,{'executor':'executor','__end__':"final_state"})
+        self.workflow.add_conditional_edges('initiate_state',nodes.router,{'planner':'planner','chatbot':"chatbot"})
+
+        self.workflow.add_edge('chatbot','final_state')
+        self.workflow.add_conditional_edges('planner',nodes.planner_decision,{'executor':'executor','__end__':"summarizer"})
         self.workflow.add_conditional_edges('executor',tools_condition,{'tools':'tools','__end__':"preplanner"})
         self.workflow.add_edge('tools','executor')
         self.workflow.add_edge('preplanner','planner')
+        self.workflow.add_edge('summarizer','final_state')
+
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
         self.config={'configurable':{'thread_id':user_dir},"recursion_limit": 5000}

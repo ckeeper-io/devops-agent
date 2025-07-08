@@ -68,8 +68,8 @@ def devops_agent(issue: dict):
         if user_dir_path.exists() and user_dir_path.is_dir():
             shutil.rmtree(user_dir_path)
             logger.info(f"Deleted user_dir: {user_dir_path}")
-
         return {
+            "agent_response": work_flow.workflow.get_state(work_flow.config).values["agent_response"],
             "status": "success",
             "message": "devops agent launched successfully.",
             "agent_trajectory":agent_trajectory

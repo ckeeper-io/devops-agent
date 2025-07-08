@@ -16,6 +16,7 @@ class State(TypedDict):
     previous_steps_actions: list
     current_cycle: int
     max_cycle_executor: int
+    agent_response: str
     executor_messages: Annotated[list,add_messages]
     input_tokens: int
     output_tokens: int

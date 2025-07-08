@@ -151,3 +151,54 @@ class Nodes():
         # USED to clean cache if ANY
         logger.info('entering final state')
         return {}
+
+    def router(self, state):
+        """
+        LLM-based router node that decides whether to send the query to the planner or to a simple chatbot.
+        """
+        logger.info('entering router node')
+        # You can use a simple prompt to classify the query
+        # Load the system prompt template
+        env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
+        template = env.get_template('router_prompt.jinja')
+        
+        # Render the system prompt with the current state
+        system_prompt = template.render()
+        messages = [SystemMessage(content=system_prompt),
+                    HumanMessage(content=f"User Query: {state['query']}\n")]
+        response = self.llm_obj.llm.invoke(messages)
+        decision = response.content.strip().lower()
+        logger.info(f"Router decision: {decision}")
+        if decision == "code":
+            return "planner"
+        else:
+            return "chatbot"
+
+    def chatbot(self, state):
+        """
+        Simple chatbot node for general conversation.
+        """
+        logger.info('entering chatbot node')
+        env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
+        template = env.get_template('chatbot_prompt.jinja')
+        
+        # Render the system prompt with the current state
+        system_prompt = template.render()
+        messages = [SystemMessage(content=system_prompt),
+                    HumanMessage(content=f"User Query: {state['query']}\n")]
+        response = self.llm_obj.llm.invoke(messages)
+        return {"agent_response": response.content}
+
+    def summarizer(self, state):
+        """
+        Summarizer node that provides a user-friendly summary of what the planner did.
+        """
+        logger.info('entering summarizer node')
+        env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
+        template = env.get_template('summarizer_prompt.jinja')
+        
+        system_prompt = template.render()
+        messages = [SystemMessage(content=system_prompt),
+                    HumanMessage(content=f"Planner Actions and Decisions:\n{state.get('previous_steps_actions', '')}\n")] 
+        response = self.llm_obj.llm.invoke(messages)
+        return {"agent_response": response.content}
