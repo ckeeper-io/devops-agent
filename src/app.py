@@ -92,52 +92,54 @@ def devops_agent(issue: dict):
 def self_healing(info: dict):    
     try:
         logger.info("Selfhealing endpoint called")
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        resource_info = None
-        logger.info(f"This is the info:\n{info}\n\n")
-        if 'incident' in info and 'resource' in info['incident']:
-            resource_info = info['incident']['resource']
-            logger.info(f"Resource information extracted")
-        else:
-            logger.info("No resource information found in incident")
+        logger.info("-----------------------------------")
+        print(info)
+        # current_dir = os.path.dirname(os.path.abspath(__file__))
+        # resource_info = None
+        # logger.info(f"This is the info:\n{info}\n\n")
+        # if 'incident' in info and 'resource' in info['incident']:
+        #     resource_info = info['incident']['resource']
+        #     logger.info(f"Resource information extracted")
+        # else:
+        #     logger.info("No resource information found in incident")
         
-        if resource_info:
-            try:
-                # Create a query for the devops agent
+        # if resource_info:
+        #     try:
+        #         # Create a query for the devops agent
                 
-                payload=info['incident']['policy_user_labels']
-                payload['query']=f"Analyze and fix issues with resource: {resource_info}"
-                ## Those value are hardcoded until the backend or database is ready 
-                payload['codebase']=[
-                    {
-                        "repository_url":"https://github.com/ckeeper-io/foundation.git",
-                        "branch":"develop", 
-                        "metadata":"This repository contains all terraform code"
-                    },
-                    {
-                        "repository_url":"https://github.com/ckeeper-io/iac-agent.git",
-                        "branch":"develop",
-                        "metadata":"In this repo we develop an agent tool"
-                    },
-                    {
-                        "repository_url":"https://github.com/ckeeper-io/backend-js.git",
-                        "branch":"develop",
-                        "metadata":"Nest framework TypeScript starter repository."
-                    },
-                    {
-                        "repository_url":"https://github.com/ckeeper-io/webapp.git",
-                        "branch":"develop",
-                        "metadata":"Frontend app"
-                    }
-                ]
-                payload['sa_key_bucket_link']="gs://sa_keys_bucket/ckeeper.json"
-                payload['github_app_installation_id']="74312314"
-                # Call the devops agent endpoint
-                # devops_response = devops_agent(payload)
-                logger.info(f'This is the payload that will be passed to devops agent:\n{payload}')
+        #         payload=info['incident']['policy_user_labels']
+        #         payload['query']=f"Analyze and fix issues with resource: {resource_info}"
+        #         ## Those value are hardcoded until the backend or database is ready 
+        #         payload['codebase']=[
+        #             {
+        #                 "repository_url":"https://github.com/ckeeper-io/foundation.git",
+        #                 "branch":"develop", 
+        #                 "metadata":"This repository contains all terraform code"
+        #             },
+        #             {
+        #                 "repository_url":"https://github.com/ckeeper-io/iac-agent.git",
+        #                 "branch":"develop",
+        #                 "metadata":"In this repo we develop an agent tool"
+        #             },
+        #             {
+        #                 "repository_url":"https://github.com/ckeeper-io/backend-js.git",
+        #                 "branch":"develop",
+        #                 "metadata":"Nest framework TypeScript starter repository."
+        #             },
+        #             {
+        #                 "repository_url":"https://github.com/ckeeper-io/webapp.git",
+        #                 "branch":"develop",
+        #                 "metadata":"Frontend app"
+        #             }
+        #         ]
+        #         payload['sa_key_bucket_link']="gs://sa_keys_bucket/ckeeper.json"
+        #         payload['github_app_installation_id']="74312314"
+        #         # Call the devops agent endpoint
+        #         # devops_response = devops_agent(payload)
+        #         logger.info(f'This is the payload that will be passed to devops agent:\n{payload}')
                 
-            except Exception as devops_error:
-                logger.error(f"Error calling devops agent: {str(devops_error)}")
+        #     except Exception as devops_error:
+        #         logger.error(f"Error calling devops agent: {str(devops_error)}")
         return {
             "status": "success",
             "message": "selfhealing endpoint launched successfully."
