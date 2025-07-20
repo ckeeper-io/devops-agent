@@ -98,12 +98,11 @@ class WorkFlow():
         self.workflow = self.workflow.compile(checkpointer=memory)
         self.config={'configurable':{'thread_id':user_dir},"recursion_limit": 10}
     def __call__(self,issue,user_dir):
-        response=self.workflow.invoke({"query":issue['query'],
-                                       "codebase":issue['codebase'],
-                                       "githubapp_id":"1472998",
-                                       "githubapp_installation_id":issue['github_app_installation_id'],
+        response=self.workflow.invoke({"query":issue.query,
+                                       "codebase":issue.codebase,
+                                       "githubapp_id":os.environ.get("GITHUBAPP_ID"),
                                        "githubapp_privatekey":os.environ.get("GITHUBAPP_PRIVATE_KEY"),
-                                       "sa_key_bucket_link":issue['sa_key_bucket_link'],
+                                       "sa_key_bucket_link":issue.sa_key_bucket_link,
                                        "query_category":"",
                                        "user_dir":user_dir,
                                        "current_cycle":0,

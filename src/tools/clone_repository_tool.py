@@ -57,33 +57,41 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
         - If the target directory already contains a clone, git will return an error.
     """
     try:
-        jwt_token = get_jwt(state['githubapp_privatekey'], state['githubapp_id'])
-        install_token = get_installation_token(jwt_token, state['githubapp_installation_id'])
+        githubapp_installation_id = None
+        for project in state['codebase']:
+            if project['repository_url'] == repo_url:
+                githubapp_installation_id = project['githubapp_installation_id']
+                break
+        if githubapp_installation_id:
+            jwt_token = get_jwt(state['githubapp_privatekey'], state['githubapp_id'])
+            install_token = get_installation_token(jwt_token, githubapp_installation_id)
 
-        current_dir=os.path.dirname(os.path.abspath(__file__))
-        repo_url = repo_url.replace("https://", f"https://x_access-token:{install_token}@")
-        command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && git clone --branch {branch} {repo_url}'
-        result = subprocess.run(
-            command,
-            cwd=current_dir,         # Start from current_dir
-            shell=True,              # Required for using 'cd' and '&&'
-            stdout=subprocess.PIPE,  # Capture standard output
-            stderr=subprocess.PIPE,  # Capture standard error
-            text=True                # Decode output as string
-        )
-        logger.info(result)
-        repo_name=repo_url.split("/")[-1].split(".")[0]
-        command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git checkout -b iacagent-hotfix'
-        result2 = subprocess.run(
-            command,
-            cwd=current_dir,         # Start from current_dir
-            shell=True,              # Required for using 'cd' and '&&'
-            stdout=subprocess.PIPE,  # Capture standard output
-            stderr=subprocess.PIPE,  # Capture standard error
-            text=True                # Decode output as string
-        )
-        logger.info(result2)
-        return "Successfully cloned the repository!"
+            current_dir=os.path.dirname(os.path.abspath(__file__))
+            repo_url = repo_url.replace("https://", f"https://x_access-token:{install_token}@")
+            command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && git clone --branch {branch} {repo_url}'
+            result = subprocess.run(
+                command,
+                cwd=current_dir,         # Start from current_dir
+                shell=True,              # Required for using 'cd' and '&&'
+                stdout=subprocess.PIPE,  # Capture standard output
+                stderr=subprocess.PIPE,  # Capture standard error
+                text=True                # Decode output as string
+            )
+            logger.info(result)
+            repo_name=repo_url.split("/")[-1].split(".")[0]
+            command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git checkout -b iacagent-hotfix'
+            result2 = subprocess.run(
+                command,
+                cwd=current_dir,         # Start from current_dir
+                shell=True,              # Required for using 'cd' and '&&'
+                stdout=subprocess.PIPE,  # Capture standard output
+                stderr=subprocess.PIPE,  # Capture standard error
+                text=True                # Decode output as string
+            )
+            logger.info(result2)
+            return "Successfully cloned the repository!"
+        else:
+            return "No matching repository found in the codebase."
     except Exception as e:
         logger.error(f"Exception occurred: {type(e).__name__}: {e}", exc_info=True)
         error_details = {

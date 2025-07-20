@@ -23,7 +23,7 @@ def download_save_sakey(url,user_dir):
 
     # GCS file info
     bucket_name = url[0]
-    blob_path = url[1]
+    blob_path = '/'.join(url[1:]) 
 
     # Local destination to save the file
     local_destination = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp",user_dir, "sa_key.json"))

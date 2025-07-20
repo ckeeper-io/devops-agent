@@ -68,54 +68,61 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
         - If there are no changes to commit, git may return an error.
     """
     try:
+        githubapp_installation_id = None
+        for project in state['codebase']:
+            if repo_name in project['repository_url']:
+                githubapp_installation_id = project['githubapp_installation_id']
+                break
+        if githubapp_installation_id:
+            jwt_token = get_jwt(state['githubapp_privatekey'], state['githubapp_id'])
+            install_token = get_installation_token(jwt_token, githubapp_installation_id)
 
-        jwt_token = get_jwt(state['githubapp_privatekey'], state['githubapp_id'])
-        install_token = get_installation_token(jwt_token, state['githubapp_installation_id'])
-
-        
-        command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git add . && git commit -m "iacagent-hotfix"'
-        result = run_git(command, current_dir)
-        print('commit command')
-        print(result)
-        print("//////")
-        command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git push --set-upstream origin iacagent-hotfix'
-        result = run_git(command, current_dir)
-        print('First push command')
-        print(result)
-        print("//////")
-        if result.returncode ==1:
-            command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git push --force origin iacagent-hotfix'
+            
+            command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git add . && git commit -m "iacagent-hotfix"'
             result = run_git(command, current_dir)
-            print('Second push command')
+            print('commit command')
             print(result)
             print("//////")
-        #########################################################################################
-        # Open PR
-        for repo in state['codebase']:
-            if repo_name in repo["repository_url"]:
-                repo_url = repo["repository_url"]
-                branch=repo["branch"]
-        repo_fullname=repo_url.split("https://github.com/")[1]
-        repo_fullname=repo_fullname.split(".git")[0]
-        logger.info(repo_fullname)
-        url = f"https://api.github.com/repos/{repo_fullname}/pulls"
-        headers = {
-        "Authorization": f"token {install_token}",
-        "Accept": "application/vnd.github+json"
-        }
-        payload = {
-            "title": pr_title,
-            "head": "iacagent-hotfix",
-            "base": branch,
-            "body": pr_body
-        }
-        response = requests.post(url, json=payload, headers=headers)
-        if response.status_code == 201:
-            pr_url = response.json().get("html_url")
-            logger.info(f"✅ Pull Request created: {pr_url}")
+            command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git push --set-upstream origin iacagent-hotfix'
+            result = run_git(command, current_dir)
+            print('First push command')
+            print(result)
+            print("//////")
+            if result.returncode ==1:
+                command=f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {repo_name} && git push --force origin iacagent-hotfix'
+                result = run_git(command, current_dir)
+                print('Second push command')
+                print(result)
+                print("//////")
+            #########################################################################################
+            # Open PR
+            for repo in state['codebase']:
+                if repo_name in repo["repository_url"]:
+                    repo_url = repo["repository_url"]
+                    branch=repo["branch"]
+            repo_fullname=repo_url.split("https://github.com/")[1]
+            repo_fullname=repo_fullname.split(".git")[0]
+            logger.info(repo_fullname)
+            url = f"https://api.github.com/repos/{repo_fullname}/pulls"
+            headers = {
+            "Authorization": f"token {install_token}",
+            "Accept": "application/vnd.github+json"
+            }
+            payload = {
+                "title": pr_title,
+                "head": "iacagent-hotfix",
+                "base": branch,
+                "body": pr_body
+            }
+            response = requests.post(url, json=payload, headers=headers)
+            if response.status_code == 201:
+                pr_url = response.json().get("html_url")
+                logger.info(f"✅ Pull Request created: {pr_url}")
+            else:
+                logger.info("❌ Failed to create pull request:")
+                logger.info(f"Status Code: {response.status_code}")
+                logger.info(response.json())
         else:
-            logger.info("❌ Failed to create pull request:")
-            logger.info(f"Status Code: {response.status_code}")
-            logger.info(response.json())
+            return "❌ Repository not found in codebase"
     except Exception as e:
         logger.error(f"Error creating pull request: {str(e)}", exc_info=True)

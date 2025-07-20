@@ -11,6 +11,7 @@ import shutil
 import random
 from tools.terraform_tool import *
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -23,6 +24,13 @@ app = FastAPI()
 origins = [
     "*",
 ]
+
+class ChatRequest(BaseModel):
+    query: str
+    codebase: list
+    workspace_id: str
+    sa_key_bucket_link: str
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,11 +56,11 @@ def generate_random_string():
     letters_and_digits = string.ascii_letters + string.digits
     random_string = ''.join(random.choice(letters_and_digits) for i in range(10))
     return random_string
-@app.post("/devopsagent", response_model=Dict[str, str])
-def devops_agent(issue: dict):
+@app.post("/chat", response_model=Dict[str, str])
+def chat(issue: ChatRequest):
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        user_dir=f'run_{issue["workspace_id"]}_{generate_random_string()}'
+        user_dir=f'run_{issue.workspace_id}_{generate_random_string()}'
         folder_path = Path(os.path.join(current_dir,"tmp",user_dir,"codebase"))
         folder_path.mkdir(parents=True, exist_ok=True)
         work_flow = WorkFlow(user_dir=user_dir)
@@ -173,6 +181,7 @@ def test(info: dict):
 
 @app.post("/test_terraform_tool")
 def test_terraform_tool(issue: dict):
+    
     current_dir = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(current_dir, "sa_key.json"), "w") as f:
         json.dump(issue['sa_key'], f)
