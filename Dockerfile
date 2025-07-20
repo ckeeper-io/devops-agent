@@ -27,14 +27,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src ./src
 COPY .env .
 
-ARG GIT_USER_NAME
-ARG GIT_USER_EMAIL
+ARG GITHUBAPP_USER_NAME
+ARG GITHUBAPP_USER_EMAIL
 
-ENV GIT_USER_NAME=$GIT_USER_NAME
-ENV GIT_USER_EMAIL=$GIT_USER_EMAIL
+ENV GITHUBAPP_USER_NAME=$GITHUBAPP_USER_NAME
+ENV GITHUBAPP_USER_EMAIL=$GITHUBAPP_USER_EMAIL
 
-RUN git config --global user.name "$GIT_USER_NAME" && \
-    git config --global user.email "$GIT_USER_EMAIL"
+RUN git config --global user.name "$GITHUBAPP_USER_NAME" && \
+    git config --global user.email "$GITHUBAPP_USER_EMAIL"
 
 EXPOSE 8000
 

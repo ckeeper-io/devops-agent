@@ -39,9 +39,12 @@ def list_directory_contents(dir_path, state: Annotated[dict, InjectedState]):
         for item in os.listdir(abs_dir_path):
             item_path = os.path.join(abs_dir_path, item)
             if os.path.isfile(item_path):
-                with open(item_path, 'r', encoding='utf-8') as f:
-                    line_count = sum(1 for _ in f)
-                items.append(f"{item}, it has {line_count} lines")
+                try:
+                    with open(item_path, 'r', encoding='utf-8') as f:
+                        line_count = sum(1 for _ in f)
+                    items.append(f"{item}, it has {line_count} lines")
+                except:
+                    continue
             else:
                 items.append(item)
 
