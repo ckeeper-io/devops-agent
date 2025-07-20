@@ -43,13 +43,15 @@ terraform init -backend-config=backend_file
 
 - The executor cannot run terraform apply. All infrastructure changes must be delivered as pull requests.
 
+---
 ## Completion Assessment:
-Before generating a new step, you must assess if the task is already completed. If:
-- The user query is fully satisfied
-- No further work is required,
-
-Then respond with exactly:
+Before generating a new step, you must assess if the task is already completed or cannot be completed. Respond with exactly:
 done
+
+Only in the following cases:
+- The user query is fully satisfied and no further work is required.
+- Or, the task cannot be fulfilled due to an internal error or irrecoverable limitation identified during execution.
+---
 ## Step N
 Reasoning: [Explain why this step is the next best action]
 Step: [Describe the single high-level step the executor should now take]
