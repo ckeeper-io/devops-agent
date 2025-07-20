@@ -142,7 +142,7 @@ class Nodes():
         """
         logger.info('making planner decision')
         
-        if state['current_step'].lower()=="done":
+        if "done" in state['current_step'].lower():
                 return '__end__'
         
         return "executor"
