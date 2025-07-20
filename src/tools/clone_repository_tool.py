@@ -59,6 +59,7 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
     try:
         githubapp_installation_id = None
         for project in state['codebase']:
+            print(project['repository_url'])
             if project['repository_url'] == repo_url:
                 githubapp_installation_id = project['githubapp_installation_id']
                 break
