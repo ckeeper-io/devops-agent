@@ -96,7 +96,7 @@ class WorkFlow():
 
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
-        self.config={'configurable':{'thread_id':user_dir},"recursion_limit": 30}
+        self.config={'configurable':{'thread_id':user_dir},"recursion_limit": 100}
     def __call__(self,issue,user_dir):
         response=self.workflow.invoke({"query":issue.query,
                                        "codebase":issue.codebase,
