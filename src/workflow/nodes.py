@@ -104,7 +104,12 @@ class Nodes():
         ]
         clear_messages = [RemoveMessage(id=msg.id) for msg in state['executor_messages']]
         
-        return {"executor_messages": clear_messages + executor_messages,"previous_steps_actions":state.get('previous_steps_actions',[])+[f"STEP: \n{response.content}"],"current_step":response.content,"current_cycle":0,"input_tokens":response.usage_metadata["input_tokens"]+state['input_tokens'],"output_tokens":response.usage_metadata["output_tokens"]+state['output_tokens']}
+        return {"executor_messages": clear_messages + executor_messages,
+                "previous_steps_actions":state.get('previous_steps_actions',[])+[f"STEP: \n{response.content}"],
+                "current_step":response.content,
+                "current_cycle":0,
+                "input_tokens":response.usage_metadata["input_tokens"]+state['input_tokens'],
+                "output_tokens":response.usage_metadata["output_tokens"]+state['output_tokens']}
     
     def executor(self, state):
         """
@@ -133,7 +138,11 @@ class Nodes():
         logger.info('Agent sleeping')
         time.sleep(10)
         logger.info('Wake up')
-        return {"executor_messages":response,"messages":response,"current_cycle":state['current_cycle']+1,"input_tokens":response[0].usage_metadata["input_tokens"]+state["input_tokens"],"output_tokens":response[0].usage_metadata["output_tokens"]+state["output_tokens"]}
+        return {"executor_messages":response,
+                "messages":response,
+                "current_cycle":state['current_cycle']+1,
+                "input_tokens":response[0].usage_metadata["input_tokens"]+state["input_tokens"],
+                "output_tokens":response[0].usage_metadata["output_tokens"]+state["output_tokens"]}
     
     def planner_decision(self, state):
         """

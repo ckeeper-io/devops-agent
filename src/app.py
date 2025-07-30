@@ -29,6 +29,7 @@ class ChatRequest(BaseModel):
     query: str
     codebase: list
     workspace_id: str
+    session_id: str
     sa_key_bucket_link: str
 
 
@@ -56,7 +57,7 @@ def generate_random_string():
     letters_and_digits = string.ascii_letters + string.digits
     random_string = ''.join(random.choice(letters_and_digits) for i in range(10))
     return random_string
-@app.post("/chat", response_model=Dict[str, str])
+@app.post("/chat_background", response_model=Dict[str, str])
 def chat(issue: ChatRequest):
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
