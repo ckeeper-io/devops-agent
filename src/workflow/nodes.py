@@ -30,7 +30,14 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 class Nodes():
     def __init__(self):
         self.llm_obj=GoogleGen()
-        self.tools=[edit,create_pull_request,view,terraform_command_executor,create_file,list_directory_contents,clone_repository,retrieve_logs]
+        self.tools=[edit,
+        create_pull_request,
+        view,
+        terraform_command_executor,
+        create_file,
+        list_directory_contents,
+        clone_repository,
+        retrieve_logs]
         self.tool_names=[func.__name__ for func in self.tools]
         self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)
     def initiate_state(self,state):

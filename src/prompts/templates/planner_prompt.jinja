@@ -46,11 +46,26 @@ terraform init -backend-config=backend_file
 ---
 ## Completion Assessment:
 Before generating a new step, you must assess if the task is already completed or cannot be completed. Respond with exactly:
-done
+Reasoning: [Explain why the task is already completed or cannot be completed]
+Step: done
 
-Only in the following cases:
+In the following cases:
+
 - The user query is fully satisfied and no further work is required.
-- Or, the task cannot be fulfilled due to an internal error or irrecoverable limitation identified during execution.
+- The task cannot be fulfilled due to an internal error or irrecoverable limitation identified during execution.
+- The executor has repeatedly failed to complete the same or similar steps (3+ attempts) due to capability limitations, missing tools, or environmental constraints.
+- The executor has explicitly stated it lacks the necessary tools, permissions, or capabilities to proceed, and no alternative approach is viable.
+- The task requires resources, access, or tools that are confirmed to be unavailable in the current environment.
+- The codebase or infrastructure state prevents the task from being completed, and no workaround exists.
+Dependencies or prerequisites for the task cannot be satisfied despite multiple attempts.
+
+IMPORTANT: If the executor reports it cannot complete a step due to limitations, carefully evaluate whether:
+
+- An alternative approach exists that could work with available tools
+- The limitation is temporary and can be resolved
+- The limitation is fundamental and makes the task impossible
+
+Only continue planning if a viable alternative approach exists. Otherwise, mark as done with clear reasoning.
 ---
 ## Step N
 Reasoning: [Explain why this step is the next best action]
