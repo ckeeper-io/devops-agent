@@ -61,6 +61,15 @@ def custom_tool_node(state):
     # Return the tool messages in executor_messages field
     return {"executor_messages": tool_messages,'messages_for_evaluation':tool_messages}
 
+def tools_condition_executor(state):
+    messages = state.get("executor_messages", [])
+    if not messages:
+        raise ValueError(f"No messages found in input state to tool_edge: {state}")
+    
+    last_message = messages[-1]
+    if hasattr(last_message, "tool_calls") and last_message.tool_calls:
+        return "tools"
+    return "__end__"
 
 class WorkFlow():
     def __init__(self,issue):
@@ -82,7 +91,7 @@ class WorkFlow():
 
         self.workflow.add_edge('chatbot','final_state')
         self.workflow.add_conditional_edges('planner',nodes.planner_decision,{'executor':'executor','__end__':"summarizer"})
-        self.workflow.add_conditional_edges('executor',tools_condition,{'tools':'tools','__end__':"preplanner"})
+        self.workflow.add_conditional_edges('executor',tools_condition_executor,{'tools':'tools','__end__':"preplanner"})
         self.workflow.add_edge('tools','executor')
         self.workflow.add_edge('preplanner','planner')
         self.workflow.add_edge('summarizer','final_state')
