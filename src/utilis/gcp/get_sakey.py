@@ -5,7 +5,7 @@ from google.oauth2 import service_account
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-def download_save_sakey(url,user_dir):
+def download_save_sakey(url,session_id):
     url=url.split('//')
     url=url[1]
     url=url.split('/')
@@ -26,7 +26,7 @@ def download_save_sakey(url,user_dir):
     blob_path = '/'.join(url[1:]) 
 
     # Local destination to save the file
-    local_destination = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp",user_dir, "sa_key.json"))
+    local_destination = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp",session_id, "sa_key.json"))
 
     # Get bucket and blob
     bucket = client.bucket(bucket_name)

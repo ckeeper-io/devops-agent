@@ -31,7 +31,7 @@ def view(file_path: str, starting_line: int, ending_line:int,state: Annotated[di
     starting_line = int(starting_line)
     ending_line = int(ending_line)
 
-    with open(os.path.abspath(os.path.join(current_dir, "..", "tmp",state["user_dir"], "codebase", file_path)), "r") as file:
+    with open(os.path.abspath(os.path.join(current_dir, "..", "tmp",state["session_id"], "codebase", file_path)), "r") as file:
         lines = file.readlines()
     if starting_line>0:
         window=lines[starting_line-1:ending_line]

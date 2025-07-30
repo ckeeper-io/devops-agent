@@ -9,6 +9,7 @@ from tools.list_directory_contents_tool import *
 from tools.clone_repository_tool import *
 from tools.retrieve_log_tool import *
 from utilis.gcp.get_sakey import download_save_sakey
+from utilis.gcp.get_sandbox import download_sandbox
 from utilis.githubapp_privatekey import *
 from llm_factory.google import GoogleGen
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
@@ -42,8 +43,10 @@ class Nodes():
         self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)
     def initiate_state(self,state):
         logger.info('entering initial state')
+        ## Download current session sandbox from  GCS bucket (if it does not exist then create a new bucket with session_id)
+        download_sandbox(session_id=state["session_id"])
         ## save sa_key
-        download_save_sakey(state["sa_key_bucket_link"],user_dir=state['user_dir'])
+        download_save_sakey(state["sa_key_bucket_link"],session_id=state["session_id"])
         return {}
     def preplanner(self,state):
         trajectory = ["Executor Actions: \n"]

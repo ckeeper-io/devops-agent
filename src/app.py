@@ -19,7 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
-
+current_dir = os.path.dirname(os.path.abspath(__file__))
 # List of allowed origins (for example, frontend URLs)
 origins = [
     "*",
@@ -58,21 +58,17 @@ def generate_random_string():
     random_string = ''.join(random.choice(letters_and_digits) for i in range(10))
     return random_string
 @app.post("/chat_background", response_model=Dict[str, str])
-def chat(issue: ChatRequest):
+def chat_background(issue: ChatRequest):
     try:
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        user_dir=f'run_{issue.workspace_id}_{generate_random_string()}'
-        folder_path = Path(os.path.join(current_dir,"tmp",user_dir,"codebase"))
-        folder_path.mkdir(parents=True, exist_ok=True)
-        work_flow = WorkFlow(user_dir=user_dir)
-        work_flow(issue=issue,user_dir=user_dir)
+        work_flow = WorkFlow(issue=issue)
+        work_flow(issue=issue)
         
         # Log workflow state
         work_flow.show_state()
         
         agent_trajectory=work_flow.messages_to_trajectory_string()
-        # Delete the user_dir before ending the endpoint
         
+        # Delete the user_dir before ending the endpoint
         user_dir_path = Path(os.path.join(current_dir, "tmp", user_dir))
         if user_dir_path.exists() and user_dir_path.is_dir():
             shutil.rmtree(user_dir_path)
@@ -178,51 +174,3 @@ def test(info: dict):
             status_code=500,
             detail=f"Failed to launch test endpoint: {str(e)}"
         )
-    
-
-@app.post("/test_terraform_tool")
-def test_terraform_tool(issue: dict):
-    
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(current_dir, "sa_key.json"), "w") as f:
-        json.dump(issue['sa_key'], f)
-
-    # command='export GOOGLE_APPLICATION_CREDENTIALS="../sa_key.json"'
-    # result=subprocess.run(
-    #     command,
-    #     cwd=current_dir,
-    #     shell=True,
-    #     stdout=subprocess.PIPE,
-    #     stderr=subprocess.PIPE,
-    #     text=True
-    # )
-    github_token=os.environ.get("GITHUB_TOKEN")
-    command=f'cd codebase && git clone https://{github_token}@github.com/{issue["github_repositories"][0]}.git'
-    result = subprocess.run(
-        command,
-        cwd=current_dir,         # Start from current_dir
-        shell=True,              # Required for using 'cd' and '&&'
-        stdout=subprocess.PIPE,  # Capture standard output
-        stderr=subprocess.PIPE,  # Capture standard error
-        text=True                # Decode output as string
-    )
-    # command='export GOOGLE_APPLICATION_CREDENTIALS="sa_key.json"'
-    # result=subprocess.run(
-    #     command,
-    #     cwd=current_dir,
-    #     shell=True,
-    #     stdout=subprocess.PIPE,
-    #     stderr=subprocess.PIPE,
-    #     text=True
-    # )
-    # result=terraform_command_executor("terraform plan","foundation")
-    # logger.info(result['stdout'])
-    # logger.info(result['stderr'])
-    result=terraform_command_executor("terraform init -backend-config=backend.config","foundation")
-    logger.info(result['stdout'])
-    logger.info(result['stderr'])
-
-    result=terraform_command_executor("terraform state list","foundation")
-    logger.info(result['stdout'])
-    logger.info(result['stderr'])
-    return "GOOD"

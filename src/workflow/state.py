@@ -5,12 +5,12 @@ from langgraph.graph.message import add_messages
 class State(TypedDict):
     query: str
     codebase: list
+    session_id: str
     github_repositories: list
     githubapp_id: str
     githubapp_privatekey: str
     query_category: str
     sa_key_bucket_link: dict
-    user_dir: str
     current_step: str
     previous_steps_actions: list
     current_cycle: int

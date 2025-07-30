@@ -70,7 +70,7 @@ def custom_tool_node(state):
 
 
 class WorkFlow():
-    def __init__(self,user_dir):
+    def __init__(self,issue):
         nodes=Nodes()
         self.workflow=StateGraph(State)
         #NODES
@@ -96,15 +96,15 @@ class WorkFlow():
 
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
-        self.config={'configurable':{'thread_id':user_dir},"recursion_limit": 100}
-    def __call__(self,issue,user_dir):
+        self.config={'configurable':{'thread_id':issue.session_id},"recursion_limit": 100}
+    def __call__(self,issue):
         response=self.workflow.invoke({"query":issue.query,
                                        "codebase":issue.codebase,
+                                       "session_id":issue.session_id,
                                        "githubapp_id":os.environ.get("GITHUBAPP_ID"),
                                        "githubapp_privatekey":os.environ.get("GITHUBAPP_PRIVATE_KEY"),
                                        "sa_key_bucket_link":issue.sa_key_bucket_link,
                                        "query_category":"",
-                                       "user_dir":user_dir,
                                        "current_cycle":0,
                                        "max_cycle_executor":3,
                                        "input_tokens":0,

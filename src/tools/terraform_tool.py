@@ -77,7 +77,7 @@ def terraform_command_executor(terraform_command: str, dir_execution: str,state:
         else:
             for i in range(len(dir_execution.split('/'))+1):
                 go_back+=f"../"
-        cmd= f'cd .. && cd tmp && cd {state["user_dir"]} && cd codebase && cd {dir_execution} && export GOOGLE_APPLICATION_CREDENTIALS="{go_back}sa_key.json" && {terraform_command}'
+        cmd= f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {dir_execution} && export GOOGLE_APPLICATION_CREDENTIALS="{go_back}sa_key.json" && {terraform_command}'
 
         # Execute the command
         result = run_command(cmd,current_dir)

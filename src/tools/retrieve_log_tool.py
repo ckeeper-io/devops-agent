@@ -231,7 +231,7 @@ def retrieve_logs(
 
         
         # Initialize retriever
-        with open(os.path.abspath(os.path.join(current_dir, "..", "tmp", state["user_dir"],"sa_key.json")), 'r') as f:
+        with open(os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"],"sa_key.json")), 'r') as f:
             sa_key = json.load(f)
 
         retriever = GCPLogRetriever(sa_key)
