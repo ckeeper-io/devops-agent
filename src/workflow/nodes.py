@@ -134,7 +134,7 @@ class Nodes():
         """
         logger.info('entering executor state')
         logger.info(f'{len(state["executor_messages"])}')
-        logger.info(f'{len(state["messages"])}')
+        logger.info(f'{len(state["messages_for_evaluation"])}')
         logger.info("------------------------------------------")
         logger.info(f"INPUT_TOKENS:-------->{state['input_tokens']}")
         logger.info(f"OUTPUT_TOKENS:------->{state['output_tokens']}")
@@ -144,18 +144,18 @@ class Nodes():
             response=[self.llm_obj.llm_with_tools.invoke(state['executor_messages'])]
         else:
             response=[AIMessage(content="Alright, What do you think?")]
-            return {"executor_messages":response,"messages":response,"current_cycle":state['current_cycle']+1}
+            return {"executor_messages":response,"messages_for_evaluation":response,"current_cycle":state['current_cycle']+1}
         logger.info(f'executor agent thought: {response[0].content}\n')
         logger.info(f'executor agent call tools: {response[0].additional_kwargs}\n\n') 
         if len(state['executor_messages'])>2 and state['executor_messages'][-2].additional_kwargs==response[0].additional_kwargs:
             logger.info(f'Same call tool!')
             response=[AIMessage(content="Alright, What do you think?")]
-            return {"executor_messages":response,"messages":response,"current_cycle":state['current_cycle']+1}
+            return {"executor_messages":response,"messages_for_evaluation":response,"current_cycle":state['current_cycle']+1}
         logger.info('Agent sleeping')
         time.sleep(10)
         logger.info('Wake up')
         return {"executor_messages":response,
-                "messages":response,
+                "messages_for_evaluation":response,
                 "current_cycle":state['current_cycle']+1,
                 "input_tokens":response[0].usage_metadata["input_tokens"]+state["input_tokens"],
                 "output_tokens":response[0].usage_metadata["output_tokens"]+state["output_tokens"]}
@@ -183,7 +183,9 @@ class Nodes():
         template = env.get_template('router_prompt.jinja')
         
         # Render the system prompt with the current state
-        system_prompt = template.render()
+        system_prompt = template.render(
+            chat_history=state["chat_history"]
+        )
         messages = [SystemMessage(content=system_prompt),
                     HumanMessage(content=f"User Query: {state['query']}\n")]
         response = self.llm_obj.llm.invoke(messages)

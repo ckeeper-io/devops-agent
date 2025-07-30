@@ -66,7 +66,7 @@ def custom_tool_node(state):
                 tool_messages.append(error_message)
     
     # Return the tool messages in executor_messages field
-    return {"executor_messages": tool_messages,'messages':tool_messages}
+    return {"executor_messages": tool_messages,'messages_for_evaluation':tool_messages}
 
 
 class WorkFlow():
@@ -104,7 +104,6 @@ class WorkFlow():
                                        "githubapp_id":os.environ.get("GITHUBAPP_ID"),
                                        "githubapp_privatekey":os.environ.get("GITHUBAPP_PRIVATE_KEY"),
                                        "sa_key_bucket_link":issue.sa_key_bucket_link,
-                                       "query_category":"",
                                        "current_cycle":0,
                                        "max_cycle_executor":3,
                                        "input_tokens":0,
@@ -116,7 +115,7 @@ class WorkFlow():
         response=self.workflow.invoke(state)
         return response
     def show_state(self):
-        for m in self.workflow.get_state(self.config).values['messages']:
+        for m in self.workflow.get_state(self.config).values['messages_for_evaluation']:
             m.pretty_print()
     def return_state_value(self,state_name):
         state_value_list=[]
@@ -130,7 +129,7 @@ class WorkFlow():
         For AIMessage, include content and tool calls. For ToolMessage, include content and tool_call_id.
         """
         trajectory = []
-        for msg in self.workflow.get_state(self.config).values['messages']:
+        for msg in self.workflow.get_state(self.config).values['messages_for_evaluation']:
             if isinstance(msg, (HumanMessage, SystemMessage)):
                 continue
             elif isinstance(msg, AIMessage):

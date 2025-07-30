@@ -7,17 +7,15 @@ class State(TypedDict):
     codebase: list
     session_id: str
     chat_history: list
-    github_repositories: list
     githubapp_id: str
     githubapp_privatekey: str
-    query_category: str
     sa_key_bucket_link: dict
     current_step: str
     previous_steps_actions: list
     current_cycle: int
     max_cycle_executor: int
     agent_response: str
-    executor_messages: Annotated[list,add_messages]
     input_tokens: int
     output_tokens: int
-    messages: Annotated[list,add_messages]
+    executor_messages: Annotated[list,add_messages]
+    messages_for_evaluation: Annotated[list,add_messages]

@@ -53,10 +53,6 @@ def root():
     return {"message": "DevOps Agent API", "docs": "/docs"}
 
 
-def generate_random_string():
-    letters_and_digits = string.ascii_letters + string.digits
-    random_string = ''.join(random.choice(letters_and_digits) for i in range(10))
-    return random_string
 @app.post("/chat_background", response_model=Dict[str, str])
 def chat_background(issue: ChatRequest):
     try:
@@ -75,10 +71,6 @@ def chat_background(issue: ChatRequest):
         }
         
     except Exception as e:
-        user_dir_path = Path(os.path.join(current_dir, "tmp", user_dir))
-        if user_dir_path.exists() and user_dir_path.is_dir():
-            shutil.rmtree(user_dir_path)
-            logger.info(f"Deleted user_dir: {user_dir_path}")
         logger.error(f"Error launching workflow: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,

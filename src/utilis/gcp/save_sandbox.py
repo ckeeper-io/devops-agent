@@ -3,6 +3,7 @@ import json
 from google.cloud import storage
 from google.oauth2 import service_account
 import shutil
+from pathlib import Path
 import logging
 logging.basicConfig(
     level=logging.INFO,
@@ -34,16 +35,24 @@ def upload_sandbox(session_id):
     for root, dirs, files in os.walk(local_base):
         for file_name in files:
             local_path = os.path.join(root, file_name)
+            
+            # Skip files larger than 50MB
+            if os.path.getsize(local_path) > 1 * 1024 * 1024:
+                logger.error(f"Skipping large file ({os.path.getsize(local_path)/1024/1024:.1f}MB): {local_path}")
+                continue
+            
             # Construct blob path relative to session_id root
             relative_path = os.path.relpath(local_path, local_base)
             blob_path = f"{session_id}/{relative_path}"
-
             blob = bucket.blob(blob_path)
-            blob.upload_from_filename(local_path)
-            logger.info(f"Uploaded {local_path} to gs://{bucket_name}/{blob_path}")
+            try:
+                blob.upload_from_filename(local_path)
+                logger.info(f"Uploaded {local_path} to gs://{bucket_name}/{blob_path}")
+            except:
+                logger.error(f"Could not upload {local_path} to gs://{bucket_name}/{blob_path}")
     
     # Delete the user_dir before ending the endpoint
-    local_base = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp", session_id))
+    local_base = Path(os.path.join(current_dir, "..", "..", "tmp", session_id))
     if local_base.exists() and local_base.is_dir():
         shutil.rmtree(local_base)
         logger.info(f"Deleted user_dir: {local_base}")
