@@ -31,7 +31,7 @@ def list_directory_contents(dir_path, state: Annotated[dict, InjectedState]):
         - If a file cannot be read, it is skipped or an error is returned.
     """
     try:
-        abs_dir_path = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["user_dir"], "codebase", dir_path))
+        abs_dir_path = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"], "codebase", dir_path))
         if not os.path.isdir(abs_dir_path):
             return {"error": f"Directory '{dir_path}' not found."}
         

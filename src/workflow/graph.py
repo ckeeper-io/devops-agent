@@ -1,11 +1,4 @@
 import sys
-from tools.edit_tool import *
-from tools.pr_tool import *
-from tools.view_tool import *
-from tools.search_tool import *
-from tools.terraform_tool import *
-from tools.create_file_tool import *
-from tools.list_directory_contents_tool import *
 from workflow.nodes import Nodes
 from workflow.state import State
 import requests
@@ -66,11 +59,20 @@ def custom_tool_node(state):
                 tool_messages.append(error_message)
     
     # Return the tool messages in executor_messages field
-    return {"executor_messages": tool_messages,'messages':tool_messages}
+    return {"executor_messages": tool_messages,'messages_for_evaluation':tool_messages}
 
+def tools_condition_executor(state):
+    messages = state.get("executor_messages", [])
+    if not messages:
+        raise ValueError(f"No messages found in input state to tool_edge: {state}")
+    
+    last_message = messages[-1]
+    if hasattr(last_message, "tool_calls") and last_message.tool_calls:
+        return "tools"
+    return "__end__"
 
 class WorkFlow():
-    def __init__(self,user_dir):
+    def __init__(self,issue):
         nodes=Nodes()
         self.workflow=StateGraph(State)
         #NODES
@@ -89,26 +91,22 @@ class WorkFlow():
 
         self.workflow.add_edge('chatbot','final_state')
         self.workflow.add_conditional_edges('planner',nodes.planner_decision,{'executor':'executor','__end__':"summarizer"})
-        self.workflow.add_conditional_edges('executor',tools_condition,{'tools':'tools','__end__':"preplanner"})
+        self.workflow.add_conditional_edges('executor',tools_condition_executor,{'tools':'tools','__end__':"preplanner"})
         self.workflow.add_edge('tools','executor')
         self.workflow.add_edge('preplanner','planner')
         self.workflow.add_edge('summarizer','final_state')
 
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
-        self.config={'configurable':{'thread_id':user_dir},"recursion_limit": 100}
-    def __call__(self,issue,user_dir):
+        self.config={'configurable':{'thread_id':issue.session_id},"recursion_limit": 100}
+    def __call__(self,issue):
         response=self.workflow.invoke({"query":issue.query,
                                        "codebase":issue.codebase,
+                                       "session_id":issue.session_id,
                                        "githubapp_id":os.environ.get("GITHUBAPP_ID"),
                                        "githubapp_privatekey":os.environ.get("GITHUBAPP_PRIVATE_KEY"),
                                        "sa_key_bucket_link":issue.sa_key_bucket_link,
-                                       "query_category":"",
-                                       "user_dir":user_dir,
-                                       "current_cycle":0,
                                        "max_cycle_executor":3,
-                                       "input_tokens":0,
-                                       "output_tokens":0,
                                        },self.config)
         return response
     def start_specific_node(self,state,starting_node):        
@@ -116,7 +114,7 @@ class WorkFlow():
         response=self.workflow.invoke(state)
         return response
     def show_state(self):
-        for m in self.workflow.get_state(self.config).values['messages']:
+        for m in self.workflow.get_state(self.config).values['messages_for_evaluation']:
             m.pretty_print()
     def return_state_value(self,state_name):
         state_value_list=[]
@@ -130,7 +128,7 @@ class WorkFlow():
         For AIMessage, include content and tool calls. For ToolMessage, include content and tool_call_id.
         """
         trajectory = []
-        for msg in self.workflow.get_state(self.config).values['messages']:
+        for msg in self.workflow.get_state(self.config).values['messages_for_evaluation']:
             if isinstance(msg, (HumanMessage, SystemMessage)):
                 continue
             elif isinstance(msg, AIMessage):

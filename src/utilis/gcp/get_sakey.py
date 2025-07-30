@@ -2,10 +2,15 @@ import os
 import json
 from google.cloud import storage
 from google.oauth2 import service_account
-
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-def download_save_sakey(url,user_dir):
+def download_save_sakey(url,session_id):
     url=url.split('//')
     url=url[1]
     url=url.split('/')
@@ -26,7 +31,7 @@ def download_save_sakey(url,user_dir):
     blob_path = '/'.join(url[1:]) 
 
     # Local destination to save the file
-    local_destination = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp",user_dir, "sa_key.json"))
+    local_destination = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp",session_id, "sa_key.json"))
 
     # Get bucket and blob
     bucket = client.bucket(bucket_name)
@@ -34,4 +39,4 @@ def download_save_sakey(url,user_dir):
 
     # Download the blob contents
     blob.download_to_filename(local_destination)
-    print(f"Downloaded gs://{bucket_name}/{blob_path} to {local_destination}")
+    logger.info(f"Downloaded gs://{bucket_name}/{blob_path} to {local_destination}")
