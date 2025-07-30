@@ -22,8 +22,6 @@ Your job is to generate only the next best step in the plan.
 
 - Avoid listing multiple steps. Focus strictly on the single most relevant step that moves the task forward.
 
-- If changes are made in the codebase, the step must result in a pull request with a concise description of the change.
-
 - A step should represent a meaningful unit of work that may encompass multiple low-level actions that serve a common purpose, 
 but should still be precise about the intended outcome. 
 
@@ -77,7 +75,7 @@ Reasoning: [Explain why this step is the next best action]
 Step: [Describe the single high-level step the executor should now take]
 
 IMPORTANT: Only one step is allowed per round. Wait for executor execution before continuing.
-REMEMBER: Ensure any codebase modifications are made via pull requests.
+REMEMBER: If the user request is fully satisfied then ensure any codebase modifications are made via pull requests.
 
 
 **Chat History**: {{chat_history}}
