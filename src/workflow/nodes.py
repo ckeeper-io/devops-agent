@@ -10,6 +10,9 @@ from tools.clone_repository_tool import *
 from tools.retrieve_log_tool import *
 from utilis.gcp.get_sakey import download_save_sakey
 from utilis.gcp.get_sandbox import download_sandbox
+from utilis.gcp.save_sandbox import upload_sandbox
+from utilis.get_chathistory import get_chat_history
+
 from utilis.githubapp_privatekey import *
 from llm_factory.google import GoogleGen
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
@@ -47,7 +50,9 @@ class Nodes():
         download_sandbox(session_id=state["session_id"])
         ## save sa_key
         download_save_sakey(state["sa_key_bucket_link"],session_id=state["session_id"])
-        return {}
+        ## Get chat history
+        chat_history= get_chat_history(session_id=state["session_id"])
+        return {"chat_history": chat_history}
     def preplanner(self,state):
         trajectory = ["Executor Actions: \n"]
         for msg in state['executor_messages']:
@@ -80,6 +85,7 @@ class Nodes():
         
         # Render the system prompt with the current state
         system_prompt = template.render(
+            chat_history=state["chat_history"],
             codebase=state['codebase'],
             previous_steps_actions="\n".join(state.get('previous_steps_actions',[" "])),
             tool_names=self.tool_names
@@ -165,11 +171,6 @@ class Nodes():
                 return '__end__'
         
         return "executor"
-    
-    def final_state(self,state):
-        # USED to clean cache if ANY
-        logger.info('entering final state')
-        return {}
 
     def router(self, state):
         """
@@ -202,7 +203,9 @@ class Nodes():
         template = env.get_template('chatbot_prompt.jinja')
         
         # Render the system prompt with the current state
-        system_prompt = template.render()
+        system_prompt = template.render(
+            chat_history=state["chat_history"]
+        )
         messages = [SystemMessage(content=system_prompt),
                     HumanMessage(content=f"User Query: {state['query']}\n")]
         response = self.llm_obj.llm.invoke(messages)
@@ -221,3 +224,10 @@ class Nodes():
                     HumanMessage(content=f"Planner Actions and Decisions:\n{state.get('previous_steps_actions', '')}\n")] 
         response = self.llm_obj.llm.invoke(messages)
         return {"agent_response": response.content}
+    
+    def final_state(self,state):
+        # USED to clean cache if ANY
+        logger.info('entering final state')
+        # Upload the current session box into bucket
+        upload_sandbox(session_id=state["session_id"])
+        return {}

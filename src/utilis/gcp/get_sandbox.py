@@ -2,7 +2,12 @@ import os
 import json
 from google.cloud import storage
 from google.oauth2 import service_account
-
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def download_sandbox(session_id):
@@ -25,7 +30,7 @@ def download_sandbox(session_id):
         # Create folder by uploading a dummy file (GCS has no real folders)
         folder_blob = bucket.blob(prefix)
         folder_blob.upload_from_string('', content_type='application/x-www-form-urlencoded')
-        print(f"Created folder gs://{bucket_name}/{prefix}")
+        logger.info(f"Created folder gs://{bucket_name}/{prefix}")
 
     # Download all blobs under the session_id/ prefix
     local_base = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp", session_id, "codebase"))
@@ -40,4 +45,4 @@ def download_sandbox(session_id):
         local_path = os.path.join(local_base, relative_path)
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
         blob.download_to_filename(local_path)
-        print(f"Downloaded gs://{bucket_name}/{blob.name} to {local_path}")
+        logger.info(f"Downloaded gs://{bucket_name}/{blob.name} to {local_path}")

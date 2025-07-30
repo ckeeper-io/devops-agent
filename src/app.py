@@ -67,12 +67,6 @@ def chat_background(issue: ChatRequest):
         work_flow.show_state()
         
         agent_trajectory=work_flow.messages_to_trajectory_string()
-        
-        # Delete the user_dir before ending the endpoint
-        user_dir_path = Path(os.path.join(current_dir, "tmp", user_dir))
-        if user_dir_path.exists() and user_dir_path.is_dir():
-            shutil.rmtree(user_dir_path)
-            logger.info(f"Deleted user_dir: {user_dir_path}")
         return {
             "agent_response": work_flow.workflow.get_state(work_flow.config).values["agent_response"],
             "status": "success",

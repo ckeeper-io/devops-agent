@@ -6,6 +6,7 @@ class State(TypedDict):
     query: str
     codebase: list
     session_id: str
+    chat_history: list
     github_repositories: list
     githubapp_id: str
     githubapp_privatekey: str
