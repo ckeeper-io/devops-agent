@@ -28,7 +28,7 @@ def download_sandbox(session_id):
         print(f"Created folder gs://{bucket_name}/{prefix}")
 
     # Download all blobs under the session_id/ prefix
-    local_base = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp", session_id))
+    local_base = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp", session_id, "codebase"))
     os.makedirs(local_base, exist_ok=True)
 
     for blob in blobs:
@@ -41,5 +41,3 @@ def download_sandbox(session_id):
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
         blob.download_to_filename(local_path)
         print(f"Downloaded gs://{bucket_name}/{blob.name} to {local_path}")
-
-download_sandbox(session_id="mahdi_id")
