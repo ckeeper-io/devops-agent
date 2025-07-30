@@ -1,19 +1,18 @@
 import sys
-from tools.edit_tool import *
-from tools.pr_tool import *
-from tools.view_tool import *
-from tools.search_tool import *
-from tools.terraform_tool import *
-from tools.create_file_tool import *
-from tools.list_directory_contents_tool import *
-from tools.clone_repository_tool import *
-from tools.retrieve_log_tool import *
+from tools.edit_tool import edit
+from tools.pr_tool import create_pull_request
+from tools.view_tool import view
+from tools.search_tool import search
+from tools.terraform_tool import terraform_command_executor
+from tools.create_file_tool import create_file
+from tools.list_directory_contents_tool import list_directory_contents
+from tools.clone_repository_tool import clone_repository
+from tools.retrieve_log_tool import retrieve_logs
 from utilis.gcp.get_sakey import download_save_sakey
 from utilis.gcp.get_sandbox import download_sandbox
 from utilis.gcp.save_sandbox import upload_sandbox
 from utilis.get_chathistory import get_chat_history
-
-from utilis.githubapp_privatekey import *
+import re
 from llm_factory.google import GoogleGen
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
 import time
@@ -31,6 +30,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 current_dir = os.path.dirname(os.path.abspath(__file__))
+
+def load_prompt(template_name, **kwargs):
+    env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
+    template = env.get_template(template_name)
+    return template.render(**kwargs)
+
+
 class Nodes():
     def __init__(self):
         self.llm_obj=GoogleGen()
@@ -53,6 +59,35 @@ class Nodes():
         ## Get chat history
         chat_history= get_chat_history(session_id=state["session_id"])
         return {"chat_history": chat_history}
+    def router(self, state):
+        """
+        LLM-based router node that decides whether to send the query to the planner or to a simple chatbot.
+        """
+        logger.info('entering router node')
+        # You can use a simple prompt to classify the query
+        # Load the system prompt template
+
+        system_prompt= load_prompt("router_prompt.jinja", chat_history=state["chat_history"])
+        messages = [SystemMessage(content=system_prompt),
+                    HumanMessage(content=f"User Query: {state['query']}\n")]
+        response = self.llm_obj.llm.invoke(messages)
+        decision = response.content.strip().lower()
+        logger.info(f"Router decision: {decision}")
+        if decision == "code":
+            return "planner"
+        else:
+            return "chatbot"
+
+    def chatbot(self, state):
+        """
+        Simple chatbot node for general conversation.
+        """
+        logger.info('entering chatbot node')
+        system_prompt= load_prompt("chatbot_prompt.jinja", chat_history=state["chat_history"])
+        messages = [SystemMessage(content=system_prompt),
+                    HumanMessage(content=f"User Query: {state['query']}\n")]
+        response = self.llm_obj.llm.invoke(messages)
+        return {"agent_response": response.content}
     def preplanner(self,state):
         trajectory = ["Executor Actions: \n"]
         for msg in state['executor_messages']:
@@ -80,17 +115,11 @@ class Nodes():
         logger.info('entering planner state')
         ### PLANNER
         # Load the system prompt template
-        env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
-        template = env.get_template('planner_prompt.jinja')
-        
-        # Render the system prompt with the current state
-        system_prompt = template.render(
+        system_prompt= load_prompt("planner_prompt.jinja",
             chat_history=state["chat_history"],
             codebase=state['codebase'],
             previous_steps_actions="\n".join(state.get('previous_steps_actions',[" "])),
-            tool_names=self.tool_names
-        )
-        
+            tool_names=self.tool_names)
         # Create messages for the planner
         messages = [
             SystemMessage(content=system_prompt),
@@ -103,16 +132,11 @@ class Nodes():
 
         ### EXECUTOR
         # Load the system prompt template
-        env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
-        template = env.get_template('executor_prompt.jinja')
-        
-        # Render the system prompt with the current state
-        system_prompt = template.render(
+        system_prompt= load_prompt("executor_prompt.jinja",
             codebase=state['codebase'],
             tool_names=self.tool_names,
             previous_steps_actions="\n".join(state.get('previous_steps_actions',[" "])),
-            current_step=response.content
-        )
+            current_step=response.content)
         # logger.info(f"Executor SYSTEM PROMPT\n {system_prompt}\n\n")
         executor_messages= [
             SystemMessage(content=system_prompt),
@@ -124,8 +148,8 @@ class Nodes():
                 "previous_steps_actions":state.get('previous_steps_actions',[])+[f"STEP: \n{response.content}"],
                 "current_step":response.content,
                 "current_cycle":0,
-                "input_tokens":response.usage_metadata["input_tokens"]+state['input_tokens'],
-                "output_tokens":response.usage_metadata["output_tokens"]+state['output_tokens']}
+                "input_tokens":response.usage_metadata["input_tokens"]+state.get('input_tokens',0),
+                "output_tokens":response.usage_metadata["output_tokens"]+state.get('output_tokens',0)}
     
     def executor(self, state):
         """
@@ -136,8 +160,8 @@ class Nodes():
         logger.info(f'{len(state["executor_messages"])}')
         logger.info(f'{len(state["messages_for_evaluation"])}')
         logger.info("------------------------------------------")
-        logger.info(f"INPUT_TOKENS:-------->{state['input_tokens']}")
-        logger.info(f"OUTPUT_TOKENS:------->{state['output_tokens']}")
+        logger.info(f"INPUT_TOKENS:-------->{state.get('input_tokens',0)}")
+        logger.info(f"OUTPUT_TOKENS:------->{state.get('output_tokens',0)}")
         if isinstance(state['executor_messages'][-1], ToolMessage):
             logger.info(f"TOOL RESPONSE: {state['executor_messages'][-1].content}")
         if state["current_cycle"]<state["max_cycle_executor"]:
@@ -157,71 +181,33 @@ class Nodes():
         return {"executor_messages":response,
                 "messages_for_evaluation":response,
                 "current_cycle":state['current_cycle']+1,
-                "input_tokens":response[0].usage_metadata["input_tokens"]+state["input_tokens"],
-                "output_tokens":response[0].usage_metadata["output_tokens"]+state["output_tokens"]}
+                "input_tokens":response[0].usage_metadata["input_tokens"]+state.get('input_tokens',0),
+                "output_tokens":response[0].usage_metadata["output_tokens"]+state.get('output_tokens',0)}
     
+    
+
     def planner_decision(self, state):
         """
         Decision function for the planner node.
         Determines whether to continue to executor or end the workflow.
+        Checks if the current step indicates that the task is already completed or cannot be completed.
         """
         logger.info('making planner decision')
-        
-        if "done" in state['current_step'].lower():
-                return '__end__'
-        
+
+        current_step = state.get('current_step', '').strip().lower()
+
+        # Check for structured completion response
+        pattern = r"^reasoning:\s*(.+?)\s*step:\s*done$"
+        if re.match(pattern, current_step, re.IGNORECASE | re.DOTALL):
+            return '__end__'
+
         return "executor"
-
-    def router(self, state):
-        """
-        LLM-based router node that decides whether to send the query to the planner or to a simple chatbot.
-        """
-        logger.info('entering router node')
-        # You can use a simple prompt to classify the query
-        # Load the system prompt template
-        env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
-        template = env.get_template('router_prompt.jinja')
-        
-        # Render the system prompt with the current state
-        system_prompt = template.render(
-            chat_history=state["chat_history"]
-        )
-        messages = [SystemMessage(content=system_prompt),
-                    HumanMessage(content=f"User Query: {state['query']}\n")]
-        response = self.llm_obj.llm.invoke(messages)
-        decision = response.content.strip().lower()
-        logger.info(f"Router decision: {decision}")
-        if decision == "code":
-            return "planner"
-        else:
-            return "chatbot"
-
-    def chatbot(self, state):
-        """
-        Simple chatbot node for general conversation.
-        """
-        logger.info('entering chatbot node')
-        env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
-        template = env.get_template('chatbot_prompt.jinja')
-        
-        # Render the system prompt with the current state
-        system_prompt = template.render(
-            chat_history=state["chat_history"]
-        )
-        messages = [SystemMessage(content=system_prompt),
-                    HumanMessage(content=f"User Query: {state['query']}\n")]
-        response = self.llm_obj.llm.invoke(messages)
-        return {"agent_response": response.content}
-
     def summarizer(self, state):
         """
         Summarizer node that provides a user-friendly summary of what the planner did.
         """
         logger.info('entering summarizer node')
-        env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
-        template = env.get_template('summarizer_prompt.jinja')
-        
-        system_prompt = template.render(user_query=state['query'])
+        system_prompt= load_prompt("summarizer_prompt.jinja",user_query=state['query'])
         messages = [SystemMessage(content=system_prompt),
                     HumanMessage(content=f"Planner Actions and Decisions:\n{state.get('previous_steps_actions', '')}\n")] 
         response = self.llm_obj.llm.invoke(messages)

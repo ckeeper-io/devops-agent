@@ -1,11 +1,4 @@
 import sys
-from tools.edit_tool import *
-from tools.pr_tool import *
-from tools.view_tool import *
-from tools.search_tool import *
-from tools.terraform_tool import *
-from tools.create_file_tool import *
-from tools.list_directory_contents_tool import *
 from workflow.nodes import Nodes
 from workflow.state import State
 import requests
@@ -104,10 +97,7 @@ class WorkFlow():
                                        "githubapp_id":os.environ.get("GITHUBAPP_ID"),
                                        "githubapp_privatekey":os.environ.get("GITHUBAPP_PRIVATE_KEY"),
                                        "sa_key_bucket_link":issue.sa_key_bucket_link,
-                                       "current_cycle":0,
                                        "max_cycle_executor":3,
-                                       "input_tokens":0,
-                                       "output_tokens":0,
                                        },self.config)
         return response
     def start_specific_node(self,state,starting_node):        
