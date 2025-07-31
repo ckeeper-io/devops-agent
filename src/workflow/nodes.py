@@ -147,6 +147,7 @@ class Nodes():
         return {"executor_messages": clear_messages + executor_messages,
                 "previous_steps_actions":state.get('previous_steps_actions',[])+[f"STEP: \n{response.content}"],
                 "current_step":response.content,
+                "plans":state.get('plans',[])+[response.content],
                 "current_cycle":0,
                 "input_tokens":response.usage_metadata["input_tokens"]+state.get('input_tokens',0),
                 "output_tokens":response.usage_metadata["output_tokens"]+state.get('output_tokens',0)}

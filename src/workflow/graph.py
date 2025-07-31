@@ -106,7 +106,7 @@ class WorkFlow():
                                        "githubapp_id":os.environ.get("GITHUBAPP_ID"),
                                        "githubapp_privatekey":os.environ.get("GITHUBAPP_PRIVATE_KEY"),
                                        "sa_key_bucket_link":issue.sa_key_bucket_link,
-                                       "max_cycle_executor":3,
+                                       "max_cycle_executor":2,
                                        },self.config)
         return response
     def start_specific_node(self,state,starting_node):        
