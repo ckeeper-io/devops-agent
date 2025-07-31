@@ -17,17 +17,6 @@ logger = logging.getLogger(__name__)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-def run_command(command, cwd):
-    return subprocess.run(
-        command,
-        cwd=cwd,
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
-    )
-
-
 def terraform_command_executor(terraform_command: str, dir_execution: str,state: Annotated[dict, InjectedState]):
     """
     This tool validates the requested Terraform operation, sets up credentials, and runs the command in the user's codebase directory. Only safe read-only operations are allowed (e.g., init, plan, validate, fmt, show, state list).
@@ -70,18 +59,21 @@ def terraform_command_executor(terraform_command: str, dir_execution: str,state:
 
   
 
-        go_back=""
-        if dir_execution.endswith("/"):
-            for i in range(len(dir_execution.split('/'))):
-                go_back+=f"../"
-        else:
-            for i in range(len(dir_execution.split('/'))+1):
-                go_back+=f"../"
-        cmd= f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {dir_execution} && export GOOGLE_APPLICATION_CREDENTIALS="{go_back}sa_key.json" && {terraform_command}'
+        sa_key_path = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"],"sa_key.json"))
 
-        # Execute the command
-        result = run_command(cmd,current_dir)
-        # logger.info(f"This is the result from terraform command: {result.stdout}")
+        # Set env var and run Terraform
+        env = os.environ.copy()
+        env["GOOGLE_APPLICATION_CREDENTIALS"] = sa_key_path
+        cmd = f"cd .. && cd tmp && cd {state['session_id']} && cd codebase && cd {dir_execution} && {terraform_command}"
+        result = subprocess.run(
+            cmd,
+            cwd=current_dir,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=env
+        )
         logger.info("out of terraform operation tool")
         return {
             'success': True,

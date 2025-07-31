@@ -12,6 +12,7 @@ import random
 from tools.terraform_tool import *
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from utilis.format_plan import format_plans_to_markdown
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -63,8 +64,10 @@ def chat_background(issue: ChatRequest):
         work_flow.show_state()
         
         agent_trajectory=work_flow.messages_to_trajectory_string()
+        state_values = work_flow.workflow.get_state(work_flow.config).values
         return {
-            "agent_response": work_flow.workflow.get_state(work_flow.config).values["agent_response"],
+            "agent_response": state_values.get("agent_response",""),
+            "plan":format_plans_to_markdown(state_values.get("plans", [])),
             "status": "success",
             "message": "devops agent launched successfully.",
             "agent_trajectory":agent_trajectory

@@ -11,6 +11,7 @@ class State(TypedDict):
     githubapp_privatekey: str
     sa_key_bucket_link: dict
     current_step: str
+    plans: list
     previous_steps_actions: list
     current_cycle: int
     max_cycle_executor: int

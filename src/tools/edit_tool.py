@@ -1,10 +1,19 @@
 import os
+import ast
+import subprocess
 from langgraph.prebuilt import InjectedState
 from typing_extensions import Annotated
+import logging
+from utilis.linter import infer_language_from_extension, check_syntax
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-def edit(file_path:str, new_code: str, starting_line: int, ending_line:int,state: Annotated[dict, InjectedState]):
+def edit(file_path: str, new_code: str, starting_line: int, ending_line: int, state: Annotated[dict, InjectedState]):
     """
     This tool replaces the contents of a file from starting_line to ending_line (inclusive) with the provided new_code string. Useful for patching or updating code snippets in-place.
 
@@ -29,22 +38,37 @@ def edit(file_path:str, new_code: str, starting_line: int, ending_line:int,state
         - If starting_line < 1, returns an error.
         - If ending_line exceeds file length, only available lines are replaced.
         - If the file does not exist, raises an exception.
+        - If there's syntax errors, raise an exception
     """
     starting_line = int(starting_line)
     ending_line = int(ending_line)
-    with open(os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"], "codebase", file_path)), "r") as file:
-        lines = file.readlines()
-    if starting_line>0:
-        lines[starting_line-1:ending_line] = [new_code]
 
-        for i in range(len(lines)):
-            if "\n" not in lines[i]:
-                lines[i]+="\n"
-        print("/////////////:")
-        print(lines)
-        print("/////////////:")
-        with open(os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"],  "codebase", file_path)), "w") as file:
-            file.writelines(lines)
-        return "File edited successfully"
-    else:
-        return "Starting line must be greater than 0"
+    full_path = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"], "codebase", file_path))
+    session_dir = os.path.dirname(full_path)
+
+    if not os.path.exists(full_path):
+        return f"Error: File '{file_path}' does not exist."
+
+    if starting_line < 1:
+        return "Error: Starting line must be greater than 0."
+
+    with open(full_path, "r") as file:
+        lines = file.readlines()
+
+    # Patch the lines
+    updated_lines = lines[:]
+    updated_lines[starting_line - 1:ending_line] = [new_code if new_code.endswith("\n") else new_code + "\n"]
+
+    updated_code = "".join(updated_lines)
+    language = infer_language_from_extension(file_path)
+    syntax_feedback = check_syntax(language, updated_code, file_path, session_dir)
+
+    if syntax_feedback:
+        return f"Syntax check failed: {syntax_feedback}"
+
+    # Save the file
+
+    with open(full_path, "w") as file:
+        file.writelines(updated_lines)
+
+    return "File edited successfully"
