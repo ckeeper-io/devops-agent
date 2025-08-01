@@ -2,6 +2,9 @@ import os
 import json
 from google.cloud import storage
 from google.oauth2 import service_account
+import time
+import jwt
+import requests
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -37,3 +40,21 @@ def get_github_app_private_key(url):
     print(f"Successfully downloaded private key from gs://{bucket_name}/{blob_path}")
     
     return private_key
+
+def get_jwt(private_key: str, app_id: str) -> str:
+    """Generate a JWT for the GitHub App using its private key."""
+    now = int(time.time())
+    payload = {"iat": now, "exp": now + 600, "iss": app_id}
+    return jwt.encode(payload, private_key, algorithm="RS256")
+
+def get_installation_token(jwt_token: str, installation_id: str) -> str:
+    """Exchange the JWT for an installation access token."""
+    url = f"https://api.github.com/app/installations/{installation_id}/access_tokens"
+    headers = {
+        "Authorization": f"Bearer {jwt_token}",
+        "Accept": "application/vnd.github+json"
+    }
+    resp = requests.post(url, headers=headers)
+    resp.raise_for_status()
+    data = resp.json()
+    return data["token"]
