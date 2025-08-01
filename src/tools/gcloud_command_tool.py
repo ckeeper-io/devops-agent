@@ -7,7 +7,6 @@ from langgraph.prebuilt import InjectedState
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-
 def run_gcloud_command(command: str, state: Annotated[dict, InjectedState]) -> str:
     """
     Execute a gcloud command.
@@ -28,16 +27,34 @@ def run_gcloud_command(command: str, state: Annotated[dict, InjectedState]) -> s
         subprocess.CalledProcessError: If the gcloud command fails to execute
     """
     try:
-        sa_key_path = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"],"sa_key.json"))
+        sa_key_path = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"], "sa_key.json"))
+        
         # Get project id from sa_key.json
         with open(sa_key_path, "r") as f:
             sa_key = json.load(f)
         project_id = sa_key["project_id"]
-        # Set env var and run gcloud command
+        
+        # Set environment variables
         env = os.environ.copy()
         env["GOOGLE_APPLICATION_CREDENTIALS"] = sa_key_path
-        cmd = f"cd .. && cd tmp && cd {state['session_id']} && cd codebase && {command} --project={project_id}"
+        
+        # First, authenticate gcloud with the service account
+        auth_cmd = f"gcloud auth activate-service-account --key-file={sa_key_path}"
+        auth_result = subprocess.run(auth_cmd, shell=True, capture_output=True, text=True, env=env)
+        
+        if auth_result.returncode != 0:
+            return f"Error authenticating with service account: {auth_result.stderr}"
+        
+        # Set the project
+        project_cmd = f"gcloud config set project {project_id}"
+        project_result = subprocess.run(project_cmd, shell=True, capture_output=True, text=True, env=env)
+        
+        if project_result.returncode != 0:
+            return f"Error setting project: {project_result.stderr}"
+        
+        # Run the actual command
+        cmd = f"{command} --project={project_id}"
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, env=env)
-        return result.stdout
+        return result
     except Exception as e:
         return f"Error running gcloud command: {e}"

@@ -1,4 +1,4 @@
-FROM python:3.11-slim AS base
+FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -14,6 +14,7 @@ RUN apt-get update && \
       apt-transport-https \
       lsb-release \
       ca-certificates \
+      unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Terraform
