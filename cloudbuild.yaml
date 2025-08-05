@@ -13,8 +13,7 @@ steps:
     args:
       - "-c"
       - |
-        docker pull europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:latest || exit 0
-        docker compose -f docker-compose-dev.yml build --cache-from europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:latest
+        docker compose -f docker-compose-dev.yml build
         docker tag europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:latest europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:${SHORT_SHA}
         docker push europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:${SHORT_SHA}
         docker push europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:latest
