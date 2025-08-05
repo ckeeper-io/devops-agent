@@ -60,6 +60,7 @@ class Nodes():
         download_save_sakey(state["sa_key_bucket_link"],session_id=state["session_id"])
         ## Get chat history
         chat_history= get_chat_history(session_id=state["session_id"])
+        logger.info(f"Chat history: {chat_history}")
         return {"chat_history": chat_history}
     def router(self, state):
         """
