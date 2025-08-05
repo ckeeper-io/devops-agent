@@ -16,12 +16,12 @@ def get_chat_history(session_id):
     
     # Access the database and collection
     db = client["pigen"]
-    collection = db["chatmessage"]
+    collection = db["chatmessages"]
 
     results = collection.find(
         {"chatsessionId": session_id},
         {"_id": 0, "messageType": 1, "messageContent": 1}
-    ).sort("WrittenAt", 1)
+    ).sort("sentAt", 1)
 
     # Convert the results to a list of dictionaries
     chat_history = list(results)
