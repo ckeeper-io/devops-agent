@@ -57,6 +57,8 @@ def root():
 @app.post("/chat_background", response_model=Dict[str, str])
 def chat_background(issue: ChatRequest):
     try:
+        logger.info("Workflow endpoint called")
+        logger.info("/////////////////////////:")
         work_flow = WorkFlow(issue=issue)
         work_flow(issue=issue)
         
