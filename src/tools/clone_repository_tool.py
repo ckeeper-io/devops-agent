@@ -5,6 +5,7 @@ import os
 import  logging
 import time
 from utilis.githubapp_privatekey import get_jwt, get_installation_token
+from langgraph.types import Command
 
 logging.basicConfig(
     level=logging.INFO,

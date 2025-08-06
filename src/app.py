@@ -32,7 +32,14 @@ class ChatRequest(BaseModel):
     workspace_id: str
     session_id: str
     sa_key_bucket_link: str
-
+class ChatBackgroundResponse(BaseModel):
+    agent_response: str
+    plan: str
+    status: str
+    message: str
+    agent_trajectory: str
+    input_tokens: int
+    output_tokens: int
 
 app.add_middleware(
     CORSMiddleware,
@@ -54,7 +61,7 @@ def root():
     return {"message": "DevOps Agent API", "docs": "/docs"}
 
 
-@app.post("/chat_background", response_model=Dict[str, str])
+@app.post("/chat_background", response_model=ChatBackgroundResponse)
 def chat_background(issue: ChatRequest):
     try:
         logger.info("Workflow endpoint called")
@@ -67,15 +74,15 @@ def chat_background(issue: ChatRequest):
         
         agent_trajectory=work_flow.messages_to_trajectory_string()
         state_values = work_flow.workflow.get_state(work_flow.config).values
-        logger.info(f"Input tokens used: {state_values.get('input_tokens')}, Output tokens used: {state_values.get('output_tokens')}")
+        logger.info(f"Input tokens used: {state_values.get('input_tokens',0)}, Output tokens used: {state_values.get('output_tokens',0)}")
         return {
             "agent_response": state_values.get("agent_response",""),
             "plan":format_plans_to_markdown(state_values.get("plans", [])),
             "status": "success",
             "message": "devops agent launched successfully.",
             "agent_trajectory":agent_trajectory,
-            "input_tokens":state_values.get('input_tokens',0),
-            "output_tokens":state_values.get('output_tokens',0)
+            "input_tokens":state_values.get("input_tokens",0),
+            "output_tokens":state_values.get("output_tokens",0)
         }
         
     except Exception as e:
