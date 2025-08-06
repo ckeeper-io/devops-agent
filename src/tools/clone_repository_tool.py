@@ -40,6 +40,10 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
         - If the target directory already contains a clone, git will return an error. In this case, you should delete the existing clone before running this tool.
     """
     try:
+        codebase_dir = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"], "codebase"))
+        repo_name = repo_url.split("/")[-1].split(".")[0]
+        if repo_name in os.listdir(codebase_dir):
+            return {"error": f"Repository {repo_name} already exists in the codebase. Please delete the existing clone before running this tool."}
         githubapp_installation_id = None
         for project in state['codebase']:
             print(project['repository_url'])
@@ -85,8 +89,8 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
             "exception_message": str(e)
         }
         # Try to include stderr from subprocess if available
-        if 'result' in locals() and hasattr(result, 'stderr'):
-            error_details["stderr_clone"] = result.stderr
+        if 'result' in locals() and hasattr(result1, 'stderr'):
+            error_details["stderr_clone"] = result1.stderr
         if 'result2' in locals() and hasattr(result2, 'stderr'):
             error_details["stderr_checkout"] = result2.stderr
         return error_details

@@ -5,6 +5,7 @@ from langgraph.graph.message import add_messages
 class State(TypedDict):
     query: str
     codebase: list
+    session_repositories: list
     session_id: str
     chat_history: list
     githubapp_id: str

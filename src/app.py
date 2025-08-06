@@ -67,6 +67,7 @@ def chat_background(issue: ChatRequest):
         
         agent_trajectory=work_flow.messages_to_trajectory_string()
         state_values = work_flow.workflow.get_state(work_flow.config).values
+        logger.info(f"Input tokens used: {state_values.get('input_tokens')}, Output tokens used: {state_values.get('output_tokens')}")
         return {
             "agent_response": state_values.get("agent_response",""),
             "plan":format_plans_to_markdown(state_values.get("plans", [])),

@@ -90,7 +90,9 @@ class Nodes():
         messages = [SystemMessage(content=system_prompt),
                     HumanMessage(content=f"User Query: {state['query']}\n")]
         response = self.llm_obj.llm.invoke(messages)
-        return {"agent_response": response.content}
+        return {"agent_response": response.content,
+                "input_tokens":response.usage_metadata["input_tokens"]+state.get('input_tokens',0),
+                "output_tokens":response.usage_metadata["output_tokens"]+state.get('output_tokens',0)}
     def preplanner(self,state):
         trajectory = ["Executor Actions: \n"]
         for msg in state['executor_messages']:
@@ -215,7 +217,9 @@ class Nodes():
         messages = [SystemMessage(content=system_prompt),
                     HumanMessage(content=f"Planner Actions and Decisions:\n{state.get('previous_steps_actions', '')}\n")] 
         response = self.llm_obj.llm.invoke(messages)
-        return {"agent_response": response.content}
+        return {"agent_response": response.content,
+                "input_tokens":response.usage_metadata["input_tokens"]+state.get('input_tokens',0),
+                "output_tokens":response.usage_metadata["output_tokens"]+state.get('output_tokens',0)}
     
     def final_state(self,state):
         # USED to clean cache if ANY
