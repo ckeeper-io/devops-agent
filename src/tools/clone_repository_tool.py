@@ -26,7 +26,7 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
 
 
     Returns:
-        successful message, or a dict with error details if cloning or checkout fails.
+        return stdout and stderr of the git commands, or a dict with error details if cloning or checkout fails.
 
     Example:
         >>> clone_repository(
@@ -37,7 +37,7 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
     Edge Cases:
         - If the repository URL is invalid or inaccessible, returns an error dict with details.
         - If the branch does not exist, the git command will fail and return error details.
-        - If the target directory already contains a clone, git will return an error.
+        - If the target directory already contains a clone, git will return an error. In this case, you should delete the existing clone before running this tool.
     """
     try:
         githubapp_installation_id = None
@@ -53,7 +53,7 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
             current_dir=os.path.dirname(os.path.abspath(__file__))
             repo_url = repo_url.replace("https://", f"https://x_access-token:{install_token}@")
             command=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && git clone --branch {branch} {repo_url}'
-            result = subprocess.run(
+            result1 = subprocess.run(
                 command,
                 cwd=current_dir,         # Start from current_dir
                 shell=True,              # Required for using 'cd' and '&&'
@@ -61,7 +61,7 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
                 stderr=subprocess.PIPE,  # Capture standard error
                 text=True                # Decode output as string
             )
-            logger.info(result)
+            logger.info(result1)
             repo_name=repo_url.split("/")[-1].split(".")[0]
             agent_branch=f'ckeeper-{int(time.time())}'
             command=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git checkout -b {agent_branch}'
@@ -74,7 +74,7 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
                 text=True                # Decode output as string
             )
             logger.info(result2)
-            return "Successfully cloned the repository!"
+            return result1,result2
         else:
             return "No matching repository found in the codebase."
     except Exception as e:
