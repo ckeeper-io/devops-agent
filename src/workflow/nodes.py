@@ -225,5 +225,5 @@ class Nodes():
         # USED to clean cache if ANY
         logger.info('entering final state')
         # Upload the current session box into bucket
-        upload_session_environment(session_id=state["session_id"])
+        upload_session_environment(session_id=state["session_id"],state=state)
         return {}

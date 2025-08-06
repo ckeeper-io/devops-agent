@@ -1,6 +1,7 @@
 from langgraph.prebuilt import InjectedState
 from typing_extensions import Annotated
 import subprocess
+from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
 import os
 import  logging
 import time
@@ -41,13 +42,17 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
         - If the target directory already contains a clone, git will return an error. In this case, you should delete the existing clone before running this tool.
     """
     try:
+
         codebase_dir = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"], "codebase"))
         repo_name = repo_url.split("/")[-1].split(".")[0]
         if repo_name in os.listdir(codebase_dir):
-            return {"error": f"Repository {repo_name} already exists in the codebase. Please delete the existing clone before running this tool."}
+            return Command(
+            update={
+                "messages": [ToolMessage(content={"error": f"Repository {repo_name} already exists in the codebase. Please delete the existing clone before running this tool."}, tool_call_id=state['messages'][-1].tool_calls[0]['id'])]
+            }
+            )
         githubapp_installation_id = None
         for project in state['codebase']:
-            print(project['repository_url'])
             if project['repository_url'] == repo_url:
                 githubapp_installation_id = project['githubapp_installation_id']
                 break
@@ -67,7 +72,6 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
                 text=True                # Decode output as string
             )
             logger.info(result1)
-            repo_name=repo_url.split("/")[-1].split(".")[0]
             agent_branch=f'ckeeper-{int(time.time())}'
             command=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git checkout -b {agent_branch}'
             result2 = subprocess.run(
@@ -79,7 +83,12 @@ def clone_repository(repo_url: str,branch: str,state: Annotated[dict, InjectedSt
                 text=True                # Decode output as string
             )
             logger.info(result2)
-            return result1,result2
+            return Command(
+            update={
+                "session_repositories": state.get("session_repositories", []) + [{"repository_name":repo_name,"agent_branch":agent_branch}],
+                "messages": [ToolMessage(content={"success": f"Repository {repo_name} cloned successfully and branch {agent_branch} checked out."}, tool_call_id=state['messages'][-1].tool_calls[0]['id'])]
+            }
+            )
         else:
             return "No matching repository found in the codebase."
     except Exception as e:
