@@ -38,7 +38,7 @@ def download_single_file(bucket_name, blob_name, local_path, prefix):
         
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
         blob.download_to_filename(local_path)
-        logger.info(f"Downloaded gs://{bucket_name}/{blob_name} to {local_path}")
+        # logger.info(f"Downloaded gs://{bucket_name}/{blob_name} to {local_path}")
         return True
     except Exception as e:
         logger.error(f"Failed to download {blob_name}: {e}")

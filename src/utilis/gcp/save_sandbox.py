@@ -39,7 +39,7 @@ def upload_single_file(bucket_name, local_path, blob_path):
         blob = bucket.blob(blob_path)
         
         blob.upload_from_filename(local_path)
-        logger.info(f"Uploaded {local_path} to gs://{bucket_name}/{blob_path}")
+        # logger.info(f"Uploaded {local_path} to gs://{bucket_name}/{blob_path}")
         return True
     except Exception as e:
         logger.error(f"Could not upload {local_path} to gs://{bucket_name}/{blob_path}: {e}")
