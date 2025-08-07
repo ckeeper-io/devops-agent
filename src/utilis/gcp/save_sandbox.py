@@ -48,7 +48,7 @@ def upload_single_file(bucket_name, local_path, blob_path):
 def upload_session_environment(session_id,state):
     # First save state['session_repositories'] list of dicts to a json file in the tmp folder
     with open(os.path.join(current_dir, "..", "..", "tmp", session_id, "session_repositories.json"), "w") as f:
-        json.dump(state['session_repositories'], f)
+        json.dump(state.get('session_repositories',[]), f)
     # Then upload the tmp folder to the GCS bucket
     
     client = get_gcs_client()
