@@ -6,14 +6,14 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        GIT_USER_NAME: "ckeeper-test-bot"
-        GIT_USER_EMAIL: "1472998+ckeeper-test-bot@users.noreply.github.com"
+        GIT_USER_NAME: "ckeeper-bot-dev"
+        GIT_USER_EMAIL: "1510035+ckeeper-bot-dev@users.noreply.github.com"
     ports:
       - "8000:8000"
     container_name: ckeeper-agent
     environment:
-      - GIT_USER_NAME=ckeeper-test-bot
-      - GIT_USER_EMAIL=1472998+ckeeper-test-bot@users.noreply.github.com
+      - GIT_USER_NAME=ckeeper-bot-dev
+      - GIT_USER_EMAIL=1510035+ckeeper-bot-dev@users.noreply.github.com
     networks:
       - evaluation-network
 

@@ -103,6 +103,7 @@ class WorkFlow():
         response=self.workflow.invoke({"query":issue.query,
                                        "codebase":issue.codebase,
                                        "session_id":issue.session_id,
+                                       "workspace_id":issue.workspace_id,
                                        "githubapp_id":os.environ.get("GITHUBAPP_ID"),
                                        "githubapp_privatekey":os.environ.get("GITHUBAPP_PRIVATE_KEY"),
                                        "sa_key_bucket_link":issue.sa_key_bucket_link,

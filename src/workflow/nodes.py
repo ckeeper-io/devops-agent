@@ -10,8 +10,8 @@ from tools.list_directory_contents_tool import list_directory_contents
 from tools.clone_repository_tool import clone_repository
 from tools.retrieve_log_tool import retrieve_logs
 from utilis.gcp.get_sakey import download_save_sakey
-from utilis.gcp.get_sandbox import download_session_environment
-from utilis.gcp.save_sandbox import upload_session_environment
+from utilis.gcp.get_sandbox import download_codebase
+from utilis.gcp.save_sandbox import upload_codebase
 from utilis.get_chathistory import get_chat_history
 import re
 from llm_factory.google import GoogleGen
@@ -55,7 +55,7 @@ class Nodes():
     def initiate_state(self,state):
         logger.info('entering initial state')
         ## Download current session sandbox from  GCS bucket (if it does not exist then create a new bucket with session_id)
-        download_session_environment(session_id=state["session_id"])
+        download_codebase(workspace_id=state["workspace_id"],session_id=state["session_id"],current_repo_branch=state["current_repo_branch"])
         ## save sa_key
         download_save_sakey(state["sa_key_bucket_link"],session_id=state["session_id"])
         ## Get chat history
@@ -225,5 +225,5 @@ class Nodes():
         # USED to clean cache if ANY
         logger.info('entering final state')
         # Upload the current session box into bucket
-        upload_session_environment(session_id=state["session_id"],state=state)
+        upload_codebase(session_id=state["session_id"],current_repo_branch=state["current_repo_branch"])
         return {}
