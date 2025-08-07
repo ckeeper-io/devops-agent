@@ -44,7 +44,7 @@ def download_single_file(bucket_name, blob_name, local_path, prefix):
         logger.error(f"Failed to download {blob_name}: {e}")
         return False
 
-def download_codebase(workspace_id,session_id,current_repo_branch):
+def download_codebase(workspace_id,session_id,current_repo_branch,codebase):
 
     client = get_gcs_client()
     bucket_name = "sandbox_bucket_ckeeper"
@@ -82,8 +82,21 @@ def download_codebase(workspace_id,session_id,current_repo_branch):
                 future.result()
             except Exception as e:
                 logger.error(f"Download task failed: {e}")
+    for repo_branch in codebase:
+        repo_name=repo_branch["repository_url"].split("https://github.com/")[1]
+        repo_name=repo_name.split(".git")[0]
+        command=f'cd .. && cd tmp && cd {session_id} && cd codebase && cd {repo_name} && git pull'
+        result= subprocess.run(
+            command,
+            cwd=current_dir,         # Start from current_dir
+            shell=True,              # Required for using 'cd' and '&&'
+            stdout=subprocess.PIPE,  # Capture standard output
+            stderr=subprocess.PIPE,  # Capture standard error
+            text=True                # Decode output as string
+        )
+        logger.info("This is the result of git pull:",result)
     for repo_branch in current_repo_branch:
-        repo_name=repo_branch["repo_url"].split("https://github.com/")[1]
+        repo_name=repo_branch["repository_url"].split("https://github.com/")[1]
         repo_name=repo_name.split(".git")[0]
         command=f'cd .. && cd tmp && cd {session_id} && cd codebase && cd {repo_name} && git checkout {repo_branch["agent_branch"]}'
         result= subprocess.run(

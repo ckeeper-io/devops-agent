@@ -48,7 +48,7 @@ def upload_single_file(bucket_name, local_path, blob_path):
 
 def upload_codebase(session_id,current_repo_branch):
     for repo_branch in current_repo_branch:
-        repo_name=repo_branch["repo_url"].split("https://github.com/")[1]
+        repo_name=repo_branch["repository_url"].split("https://github.com/")[1]
         repo_name=repo_name.split(".git")[0]
         command=f'cd .. && cd tmp && cd {session_id} && cd codebase && cd {repo_name} && git checkout {repo_branch["original_branch"]}'
         result= subprocess.run(

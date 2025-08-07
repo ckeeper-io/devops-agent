@@ -1,11 +1,17 @@
 from typing_extensions import TypedDict
-from typing import Annotated
+from typing import Annotated, List
 from langgraph.graph.message import add_messages
+from pydantic import BaseModel
+
+class RepoBranch(BaseModel):
+    repository_url: str
+    agent_branch: str
+    original_branch: str
 
 class State(TypedDict):
     query: str
     codebase: list
-    current_repo_branch: list
+    current_repo_branch: List[RepoBranch]
     session_id: str
     workspace_id: str
     chat_history: list

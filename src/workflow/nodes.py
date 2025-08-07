@@ -7,8 +7,8 @@ from tools.gcloud_command_tool import run_gcloud_command
 from tools.terraform_tool import terraform_command_executor
 from tools.create_file_tool import create_file
 from tools.list_directory_contents_tool import list_directory_contents
-from tools.clone_repository_tool import clone_repository
 from tools.retrieve_log_tool import retrieve_logs
+from tools.git_commands_tool import run_git_command
 from utilis.gcp.get_sakey import download_save_sakey
 from utilis.gcp.get_sandbox import download_codebase
 from utilis.gcp.save_sandbox import upload_codebase
@@ -47,9 +47,9 @@ class Nodes():
         terraform_command_executor,
         create_file,
         list_directory_contents,
-        clone_repository,
         retrieve_logs,
-        run_gcloud_command]
+        run_gcloud_command,
+        run_git_command]
         self.tool_names=[func.__name__ for func in self.tools]
         self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)
     def initiate_state(self,state):
