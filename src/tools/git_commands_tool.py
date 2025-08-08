@@ -12,7 +12,7 @@ def run_git_command(command: str,path: str, state: Annotated[dict, InjectedState
     Execute a git command.
     Args:
         command (str), Those commands are not eligible ['push','remote','config']
-        path (str): Relative path from the codebase root.
+        path (str): Relative path from the codebase root. This where you want to execute the git command
         state: Automatically injected by the system.
         
     Returns:

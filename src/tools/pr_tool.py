@@ -65,12 +65,14 @@ def extract_current_branch(git_stdout: str) -> str:
             return line.strip().split()[1]  # The branch name is the second word
     return None  # Fallback if not found
 
-def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, InjectedState]):
+def create_pull_request(repo_name,agent_branch,target_branch,pr_title,pr_body,state: Annotated[dict, InjectedState]):
     """
     This tool commits changes, pushes a new branch ('iacagent-hotfix'), and opens a pull request on GitHub with the provided title and body. It uses the GitHub App credentials from the injected state for authentication.
 
     Args:
         repo_name (str): The name of the changed repository (must match a folder in the codebase).
+        agent_branch (str): The current working branch containing your changes.
+        target_branch (str): The branch you want to merge your changes into.
         pr_title (str): Title for the pull request, describing the problem or change.
         pr_body (str): Detailed body for the pull request, explaining the problem and the provided solution.
         state: Automatically injected by the system - do not include this parameter in tool calls.
@@ -98,39 +100,16 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
             jwt_token = get_jwt(state['githubapp_privatekey'], state['githubapp_id'])
             install_token = get_installation_token(jwt_token, githubapp_installation_id)
 
-            ## get agent branch name using repo_name
-            command=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git branch'
-            result = run_git(command, current_dir)
-            agent_branch=extract_current_branch(result.stdout)
-
-            command=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git add . && git commit -m"{pr_title}"'
-            result = run_git(command, current_dir)
-            print('commit command')
-            print(result)
-            print("//////")
-            command=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git push --set-upstream origin {agent_branch}'
-            result = run_git(command, current_dir)
-            print('First push command')
-            print(result)
-            print("//////")
-            if result.returncode ==1:
-                command=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git push --force origin {agent_branch}'
-                result = run_git(command, current_dir)
-                print('Second push command')
-                print(result)
-                print("//////")
-            #########################################################################################
             # Open PR
             for repo in state['codebase']:
                 if repo_name in repo["repository_url"]:
                     repo_url = repo["repository_url"]
-                    branch=repo["branch"]
             repo_fullname=repo_url.split("https://github.com/")[1]
             repo_fullname=repo_fullname.split(".git")[0]
             logger.info(repo_fullname)
             
             # Check and delete existing PR between the same branches
-            check_and_delete_existing_pr(repo_fullname, agent_branch, branch, install_token)
+            check_and_delete_existing_pr(repo_fullname, agent_branch, target_branch, install_token)
             
             url = f"https://api.github.com/repos/{repo_fullname}/pulls"
             headers = {
@@ -140,7 +119,7 @@ def create_pull_request(repo_name,pr_title,pr_body,state: Annotated[dict, Inject
             payload = {
                 "title": pr_title,
                 "head": agent_branch,
-                "base": branch,
+                "base": target_branch,
                 "body": pr_body
             }
             response = requests.post(url, json=payload, headers=headers)

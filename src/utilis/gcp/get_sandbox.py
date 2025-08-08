@@ -83,7 +83,7 @@ def download_codebase(workspace_id,session_id,current_repo_branch,codebase):
             except Exception as e:
                 logger.error(f"Download task failed: {e}")
     for repo_branch in codebase:
-        repo_name=repo_branch["repository_url"].split("https://github.com/")[1]
+        repo_name=repo_branch["repository_url"].split("/")[-1]
         repo_name=repo_name.split(".git")[0]
         command=f'cd .. && cd tmp && cd {session_id} && cd codebase && cd {repo_name} && git pull'
         result= subprocess.run(
