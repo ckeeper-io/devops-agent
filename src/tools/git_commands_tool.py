@@ -11,7 +11,7 @@ def run_git_command(command: str,path: str, state: Annotated[dict, InjectedState
     """
     Execute a git command.
     Args:
-        command (str), Those commands are not eligible ['push','remote','config']
+        command (str): (e.g., "git add ."), Those commands are not eligible ['push','remote','config']
         path (str): Relative path from the codebase root. This where you want to execute the git command
         state: Automatically injected by the system.
         
@@ -24,7 +24,7 @@ def run_git_command(command: str,path: str, state: Annotated[dict, InjectedState
         for d_cmd in DANGEROUS_GIT_COMMANDS:
             if d_cmd in command:
                 return f"You can not execute this command" 
-        cmd=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd path && {command}'
+        cmd=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {path} && {command}'
         result = subprocess.run(
                 cmd,
                 cwd=current_dir,         # Start from current_dir

@@ -50,7 +50,7 @@ def upload_codebase(session_id,current_repo_branch):
     for repo_branch in current_repo_branch:
         repo_name=repo_branch["repository_url"].split("/")[-1]
         repo_name=repo_name.split(".git")[0]
-        command=f'cd .. && cd tmp && cd {session_id} && cd codebase && cd {repo_name} && git checkout {repo_branch["original_branch"]}'
+        command=f'cd .. && cd .. && cd tmp && cd {session_id} && cd codebase && cd {repo_name} && git checkout {repo_branch["original_branch"]}'
         result= subprocess.run(
             command,
             cwd=current_dir,         # Start from current_dir

@@ -65,19 +65,25 @@ def extract_current_branch(git_stdout: str) -> str:
             return line.strip().split()[1]  # The branch name is the second word
     return None  # Fallback if not found
 
-def create_pull_request(repo_name,agent_branch,target_branch,pr_title,pr_body,state: Annotated[dict, InjectedState]):
+def push_changes(path,state: Annotated[dict, InjectedState]):
     """
-    This tool opens a pull request on GitHub with the provided title and body. It uses the GitHub App credentials from the injected state for authentication.
+    This tool pushs changes to github
 
     Args:
-        repo_name (str): The name of the changed repository (must match a folder in the codebase).
-        agent_branch (str): The current working branch containing your changes.
-        target_branch (str): The branch you want to merge your changes into.
-        pr_title (str): Title for the pull request, describing the problem or change.
-        pr_body (str): Detailed body for the pull request, explaining the problem and the provided solution.
+        path (str): Relative path from the codebase root. This where push command is going to be executed
         state: Automatically injected by the system - do not include this parameter in tool calls.
     """
     try:
+        repo_name=path.split('/')[0]
+        command=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git branch'
+        result = run_git(command, current_dir)
+        current_branch=extract_current_branch(result.stdout)
+        for project in state["codebase"]:
+            if repo_name in project["repository_url"]:
+                if current_branch==project["branch"]:
+                    return f"You are not permitted to push to this branch {current_branch}. Please create new branch and push again"
+        
+
         githubapp_installation_id = None
         for project in state['codebase']:
             if repo_name in project['repository_url']:
@@ -86,41 +92,19 @@ def create_pull_request(repo_name,agent_branch,target_branch,pr_title,pr_body,st
         if githubapp_installation_id:
             jwt_token = get_jwt(state['githubapp_privatekey'], state['githubapp_id'])
             install_token = get_installation_token(jwt_token, githubapp_installation_id)
-
-            # Open PR
-            for repo in state['codebase']:
-                if repo_name in repo["repository_url"]:
-                    repo_url = repo["repository_url"]
-            repo_fullname=repo_url.split("https://github.com/")[1]
-            repo_fullname=repo_fullname.split(".git")[0]
-            logger.info(repo_fullname)
-            
-            # Check and delete existing PR between the same branches
-            check_and_delete_existing_pr(repo_fullname, agent_branch, target_branch, install_token)
-            
-            url = f"https://api.github.com/repos/{repo_fullname}/pulls"
-            headers = {
-            "Authorization": f"token {install_token}",
-            "Accept": "application/vnd.github+json"
-            }
-            payload = {
-                "title": pr_title,
-                "head": agent_branch,
-                "base": target_branch,
-                "body": pr_body
-            }
-            response = requests.post(url, json=payload, headers=headers)
-            if response.status_code == 201:
-                pr_url = response.json().get("html_url")
-                logger.info(f"✅ Pull Request created: {pr_url}")
-                return f"✅ Pull Request created: {pr_url}"
-            else:
-                logger.info("❌ Failed to create pull request:")
-                logger.info(f"Status Code: {response.status_code}")
-                logger.info(response.json())
-                return f"❌ Failed to create pull request {response.status_code}"
-        else:
-            return "❌ Repository not found in codebase"
+        authed_url = project["repository_url"].replace("https://", f"https://x_access-token:{install_token}@")
+        command=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {path} && git remote set-url origin {authed_url} && git push --set-upstream origin {current_branch}'
+        result = run_git(command, current_dir)
+        print('First push command')
+        print(result)
+        print("//////")
+        if result.returncode ==1:
+            command=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {path} && git remote set-url origin {authed_url} && git push --force origin {current_branch}'
+            result = run_git(command, current_dir)
+            print('Second push command')
+            print(result)
+            print("//////")
+        return result
     except Exception as e:
-        logger.error(f"Error creating pull request: {str(e)}", exc_info=True)
-        return f"❌ Error creating pull request: {str(e)}"
+        logger.error(f"Error executing git push command: {str(e)}", exc_info=True)
+        return f"❌ Error executing git push command: {str(e)}"

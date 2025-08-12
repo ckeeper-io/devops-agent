@@ -21,10 +21,13 @@ class State(TypedDict):
     current_step: str
     plans: list
     previous_steps_actions: list
+    step_action_markdown_format: str
     current_cycle: int
     max_cycle_executor: int
     agent_response: str
     input_tokens: int
     output_tokens: int
+    recursion_limit: int
+    current_recursion: int
     executor_messages: Annotated[list,add_messages]
     messages_for_evaluation: Annotated[list,add_messages]
