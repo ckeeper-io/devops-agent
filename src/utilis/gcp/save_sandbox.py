@@ -7,6 +7,7 @@ from pathlib import Path
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+import subprocess
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,17 +46,23 @@ def upload_single_file(bucket_name, local_path, blob_path):
         logger.error(f"Could not upload {local_path} to gs://{bucket_name}/{blob_path}: {e}")
         return False
 
-def upload_session_environment(session_id,state):
-    # First save state['session_repositories'] list of dicts to a json file in the tmp folder
-    with open(os.path.join(current_dir, "..", "..", "tmp", session_id, "session_repositories.json"), "w") as f:
-        json.dump(state.get('session_repositories',[]), f)
-    # Then upload the tmp folder to the GCS bucket
-    
+def upload_codebase(session_id,current_repo_branch):
+    for repo_branch in current_repo_branch:
+        repo_name=repo_branch["repository_url"].split("/")[-1]
+        repo_name=repo_name.split(".git")[0]
+        command=f'cd .. && cd .. && cd tmp && cd {session_id} && cd codebase && cd {repo_name} && git checkout {repo_branch["original_branch"]}'
+        result= subprocess.run(
+            command,
+            cwd=current_dir,         # Start from current_dir
+            shell=True,              # Required for using 'cd' and '&&'
+            stdout=subprocess.PIPE,  # Capture standard output
+            stderr=subprocess.PIPE,  # Capture standard error
+            text=True                # Decode output as string
+        )
+        logger.info("This is the result of git checkout to original_branch:",result)
     client = get_gcs_client()
     bucket_name = "sandbox_bucket_ckeeper"
     bucket = client.bucket(bucket_name)
-    upload_single_file(bucket_name=bucket_name, local_path=os.path.join(current_dir, "..", "..", "tmp", session_id,"session_repositories.json"), blob_path=f"{session_id}/session_repositories.json")
-    # Then upload the tmp folder to the GCS bucket
 
     # Define local folder to upload
     local_base = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp", session_id))

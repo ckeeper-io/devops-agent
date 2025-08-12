@@ -7,12 +7,14 @@ from tools.gcloud_command_tool import run_gcloud_command
 from tools.terraform_tool import terraform_command_executor
 from tools.create_file_tool import create_file
 from tools.list_directory_contents_tool import list_directory_contents
-from tools.clone_repository_tool import clone_repository
 from tools.retrieve_log_tool import retrieve_logs
+from tools.git_commands_tool import run_git_command
+from tools.push_github_tool import push_changes
 from utilis.gcp.get_sakey import download_save_sakey
-from utilis.gcp.get_sandbox import download_session_environment
-from utilis.gcp.save_sandbox import upload_session_environment
+from utilis.gcp.get_sandbox import download_codebase
+from utilis.gcp.save_sandbox import upload_codebase
 from utilis.get_chathistory import get_chat_history
+from utilis.step_action_markdown import step_action_markdown
 import re
 from llm_factory.google import GoogleGen
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
@@ -47,15 +49,16 @@ class Nodes():
         terraform_command_executor,
         create_file,
         list_directory_contents,
-        clone_repository,
         retrieve_logs,
-        run_gcloud_command]
+        run_gcloud_command,
+        run_git_command,
+        push_changes]
         self.tool_names=[func.__name__ for func in self.tools]
         self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)
     def initiate_state(self,state):
         logger.info('entering initial state')
         ## Download current session sandbox from  GCS bucket (if it does not exist then create a new bucket with session_id)
-        download_session_environment(session_id=state["session_id"])
+        download_codebase(workspace_id=state["workspace_id"],session_id=state["session_id"],current_repo_branch=state["current_repo_branch"],codebase=state["codebase"],state=state)
         ## save sa_key
         download_save_sakey(state["sa_key_bucket_link"],session_id=state["session_id"])
         ## Get chat history
@@ -94,36 +97,52 @@ class Nodes():
                 "input_tokens":response.usage_metadata["input_tokens"]+state.get('input_tokens',0),
                 "output_tokens":response.usage_metadata["output_tokens"]+state.get('output_tokens',0)}
     def preplanner(self,state):
-        trajectory = ["Executor Actions: \n"]
+        trajectory = []
         for msg in state['executor_messages']:
             if isinstance(msg, (HumanMessage, SystemMessage)):
                 continue
             elif isinstance(msg, AIMessage):
-                entry = f"AI: {msg.content}"
-                # Tool calls (if any)
+                trajectory.append({"from":"AI Executor", "content":msg.content})
                 tool_calls = getattr(msg, 'tool_calls', None)
                 if tool_calls:
-                    entry += f"\n  Tool Calls: {tool_calls}"
-                trajectory.append(entry)
+                    for tool_call in msg.tool_calls:
+                        trajectory.append({"from":"Tool Call", "name":tool_call["name"], "args": tool_call["args"], "id":tool_call["id"]})
             elif isinstance(msg, ToolMessage):
-                entry = f"TOOL RESPONSE: {msg.content}"
                 tool_call_id = getattr(msg, 'tool_call_id', None)
                 if tool_call_id:
-                    entry += f"\n  Tool Call ID: {tool_call_id}"
-                trajectory.append(entry)
-        return {"previous_steps_actions":state["previous_steps_actions"]+["\n---\n".join(trajectory)]}
+                    trajectory.append({"from":"Tool Response", "content":msg.content,"id":tool_call_id})
+        previous_steps_actions=[]
+        tool_call_ids=[]
+        for step_action in state["previous_steps_actions"][:-3]:
+            if step_action["from"] == "Tool Call" and step_action["name"] not in ["run_gcloud_command","retrieve_logs"]:
+                tool_call_ids.append(step_action["id"])
+                continue
+            elif step_action["from"] == "Tool Call":
+                previous_steps_actions.append(step_action)
+            if step_action["from"] == "Tool Response" and step_action["id"] in tool_call_ids:
+                previous_steps_actions.append(step_action)
+            elif step_action["from"] == "Tool Response":
+                continue
+            if step_action["from"] in ["AI Executor","AI Planner"]:
+                previous_steps_actions.append(step_action)
+                tool_call_ids=[]
+        for step_action in state["previous_steps_actions"][-3:]:
+            previous_steps_actions.append(step_action)
+
+        return {"previous_steps_actions":previous_steps_actions+trajectory}
     def planner(self, state):
         """
         Planner node that analyzes the query and creates a plan for execution.
         Uses the LLM to generate a step-by-step plan based on the user query.
         """
         logger.info('entering planner state')
+        step_action_markdown_format=step_action_markdown(state.get('previous_steps_actions',[]))
         ### PLANNER
         # Load the system prompt template
         system_prompt= load_prompt("planner_prompt.jinja",
             chat_history=state["chat_history"],
             codebase=state['codebase'],
-            previous_steps_actions="\n".join(state.get('previous_steps_actions',[" "])),
+            previous_steps_actions=step_action_markdown_format,
             tool_names=self.tool_names)
         # Create messages for the planner
         messages = [
@@ -140,7 +159,7 @@ class Nodes():
         system_prompt= load_prompt("executor_prompt.jinja",
             codebase=state['codebase'],
             tool_names=self.tool_names,
-            previous_steps_actions="\n".join(state.get('previous_steps_actions',[" "])),
+            previous_steps_actions=step_action_markdown_format,
             current_step=response.content)
         # logger.info(f"Executor SYSTEM PROMPT\n {system_prompt}\n\n")
         executor_messages= [
@@ -148,12 +167,14 @@ class Nodes():
             HumanMessage(content=f"User Query: {state['query']}\n")
         ]
         clear_messages = [RemoveMessage(id=msg.id) for msg in state['executor_messages']]
-        
+        time.sleep(6)
         return {"executor_messages": clear_messages + executor_messages,
-                "previous_steps_actions":state.get('previous_steps_actions',[])+[f"STEP: \n{response.content}"],
+                "previous_steps_actions":state.get('previous_steps_actions',[])+[{"from":"AI Planner","content":response.content}],
+                "step_action_markdown_format":step_action_markdown_format,
                 "current_step":response.content,
                 "plans":state.get('plans',[])+[response.content],
                 "current_cycle":0,
+                "current_recursion":state.get("current_recursion",0) + 1,
                 "input_tokens":response.usage_metadata["input_tokens"]+state.get('input_tokens',0),
                 "output_tokens":response.usage_metadata["output_tokens"]+state.get('output_tokens',0)}
     
@@ -182,11 +203,12 @@ class Nodes():
             response=[AIMessage(content="Alright, What do you think?")]
             return {"executor_messages":response,"messages_for_evaluation":response,"current_cycle":state['current_cycle']+1}
         logger.info('Agent sleeping')
-        time.sleep(10)
+        time.sleep(6)
         logger.info('Wake up')
         return {"executor_messages":response,
                 "messages_for_evaluation":response,
                 "current_cycle":state['current_cycle']+1,
+                "current_recursion":state.get("current_recursion",0) + 1,
                 "input_tokens":response[0].usage_metadata["input_tokens"]+state.get('input_tokens',0),
                 "output_tokens":response[0].usage_metadata["output_tokens"]+state.get('output_tokens',0)}
     
@@ -215,7 +237,7 @@ class Nodes():
         logger.info('entering summarizer node')
         system_prompt= load_prompt("summarizer_prompt.jinja",user_query=state['query'])
         messages = [SystemMessage(content=system_prompt),
-                    HumanMessage(content=f"Planner Actions and Decisions:\n{state.get('previous_steps_actions', '')}\n")] 
+                    HumanMessage(content=f"Planner Actions and Decisions:\n{state.get('step_action_markdown_format', '')}\n")] 
         response = self.llm_obj.llm.invoke(messages)
         return {"agent_response": response.content,
                 "input_tokens":response.usage_metadata["input_tokens"]+state.get('input_tokens',0),
@@ -225,5 +247,5 @@ class Nodes():
         # USED to clean cache if ANY
         logger.info('entering final state')
         # Upload the current session box into bucket
-        upload_session_environment(session_id=state["session_id"],state=state)
+        upload_codebase(session_id=state["session_id"],current_repo_branch=state["current_repo_branch"])
         return {}

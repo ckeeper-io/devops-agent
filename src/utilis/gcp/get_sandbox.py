@@ -5,7 +5,8 @@ from google.oauth2 import service_account
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
-
+import subprocess
+from utilis.githubapp_privatekey import get_jwt, get_installation_token
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -44,12 +45,13 @@ def download_single_file(bucket_name, blob_name, local_path, prefix):
         logger.error(f"Failed to download {blob_name}: {e}")
         return False
 
-def download_session_environment(session_id):
+def download_codebase(workspace_id,session_id,current_repo_branch,codebase,state):
+
     client = get_gcs_client()
     bucket_name = "sandbox_bucket_ckeeper"
     bucket = client.bucket(bucket_name)
 
-    prefix = f"{session_id}/codebase/"
+    prefix = f"{workspace_id}/codebase/"
     blobs = list(client.list_blobs(bucket_name, prefix=prefix))
 
     if not blobs:
@@ -81,3 +83,34 @@ def download_session_environment(session_id):
                 future.result()
             except Exception as e:
                 logger.error(f"Download task failed: {e}")
+    
+    jwt_token = get_jwt(state['githubapp_privatekey'], state['githubapp_id'])
+    for project in codebase:
+        repo_name=project["repository_url"].split("/")[-1]
+        repo_name=repo_name.split(".git")[0]
+        githubapp_installation_id = project['githubapp_installation_id']
+        install_token = get_installation_token(jwt_token, githubapp_installation_id)
+        authed_url = project["repository_url"].replace("https://", f"https://x_access-token:{install_token}@")
+        command=f'cd .. && cd .. && cd tmp && cd {session_id} && cd codebase && cd {repo_name} && git fetch {authed_url} && git reset --hard origin/{project["branch"]}'
+        result= subprocess.run(
+            command,
+            cwd=current_dir,         # Start from current_dir
+            shell=True,              # Required for using 'cd' and '&&'
+            stdout=subprocess.PIPE,  # Capture standard output
+            stderr=subprocess.PIPE,  # Capture standard error
+            text=True                # Decode output as string
+        )
+        logger.info(f"This is the result of git pull: {result}")
+    for repo_branch in current_repo_branch:
+        repo_name=repo_branch["repository_url"].split("/")[-1]
+        repo_name=repo_name.split(".git")[0]
+        command=f'cd .. && cd .. && cd tmp && cd {session_id} && cd codebase && cd {repo_name} && git checkout {repo_branch["agent_branch"]}'
+        result= subprocess.run(
+            command,
+            cwd=current_dir,         # Start from current_dir
+            shell=True,              # Required for using 'cd' and '&&'
+            stdout=subprocess.PIPE,  # Capture standard output
+            stderr=subprocess.PIPE,  # Capture standard error
+            text=True                # Decode output as string
+        )
+        logger.info(f"This is the result of git checkout to agent_branch: {result}")

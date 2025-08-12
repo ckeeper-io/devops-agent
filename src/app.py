@@ -32,6 +32,7 @@ class ChatRequest(BaseModel):
     workspace_id: str
     session_id: str
     sa_key_bucket_link: str
+    state: dict
 class ChatBackgroundResponse(BaseModel):
     agent_response: str
     plan: str

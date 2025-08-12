@@ -10,7 +10,7 @@ from langgraph.prebuilt import ToolNode,tools_condition
 from langgraph.checkpoint.memory import MemorySaver
 import os
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
-
+from langfuse.langchain import CallbackHandler
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -67,9 +67,11 @@ def tools_condition_executor(state):
         raise ValueError(f"No messages found in input state to tool_edge: {state}")
     
     last_message = messages[-1]
+    if state["current_recursion"]>=state["recursion_limit"]:
+        return "summarizer"
     if hasattr(last_message, "tool_calls") and last_message.tool_calls:
         return "tools"
-    return "__end__"
+    return "preplanner"
 
 class WorkFlow():
     def __init__(self,issue):
@@ -91,22 +93,29 @@ class WorkFlow():
 
         self.workflow.add_edge('chatbot','final_state')
         self.workflow.add_conditional_edges('planner',nodes.planner_decision,{'executor':'executor','__end__':"summarizer"})
-        self.workflow.add_conditional_edges('executor',tools_condition_executor,{'tools':'tools','__end__':"preplanner"})
+        self.workflow.add_conditional_edges('executor',tools_condition_executor,{'tools':'tools','preplanner':"preplanner",'summarizer':"summarizer"})
         self.workflow.add_edge('tools','executor')
         self.workflow.add_edge('preplanner','planner')
         self.workflow.add_edge('summarizer','final_state')
 
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
-        self.config={'configurable':{'thread_id':issue.session_id},"recursion_limit": 100}
+        self.langfuse_handler = CallbackHandler()
+        self.config={'configurable':{'thread_id':issue.session_id},"recursion_limit": 200,"callbacks": [self.langfuse_handler]}
     def __call__(self,issue):
         response=self.workflow.invoke({"query":issue.query,
                                        "codebase":issue.codebase,
                                        "session_id":issue.session_id,
+                                       "workspace_id":issue.workspace_id,
                                        "githubapp_id":os.environ.get("GITHUBAPP_ID"),
                                        "githubapp_privatekey":os.environ.get("GITHUBAPP_PRIVATE_KEY"),
                                        "sa_key_bucket_link":issue.sa_key_bucket_link,
-                                       "max_cycle_executor":2,
+                                       "max_cycle_executor":1,
+                                       "recursion_limit": 7,
+                                       "current_recursion":0,
+                                       "current_repo_branch":issue.state["current_repo_branch"],
+                                       "input_tokens":issue.state["input_tokens"],
+                                       "output_tokens":issue.state["output_tokens"]
                                        },self.config)
         return response
     def start_specific_node(self,state,starting_node):        
