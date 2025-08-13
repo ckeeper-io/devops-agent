@@ -82,8 +82,9 @@ def chat_background(issue: ChatRequest):
             "status": "success",
             "message": "devops agent launched successfully.",
             "agent_trajectory":agent_trajectory,
-            "input_tokens":state_values.get("input_tokens",0),
-            "output_tokens":state_values.get("output_tokens",0)
+            "state":{"current_repo_branch":state_values.get("current_repo_branch", []),
+                     "input_tokens":state_values.get("input_tokens", []),
+                     "output_tokens":state_values.get("output_tokens", [])},
         }
         
     except Exception as e:
