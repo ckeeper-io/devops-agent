@@ -39,8 +39,7 @@ class ChatBackgroundResponse(BaseModel):
     status: str
     message: str
     agent_trajectory: str
-    input_tokens: int
-    output_tokens: int
+    state: dict
 
 app.add_middleware(
     CORSMiddleware,
@@ -83,8 +82,8 @@ def chat_background(issue: ChatRequest):
             "message": "devops agent launched successfully.",
             "agent_trajectory":agent_trajectory,
             "state":{"current_repo_branch":state_values.get("current_repo_branch", []),
-                     "input_tokens":state_values.get("input_tokens", []),
-                     "output_tokens":state_values.get("output_tokens", [])},
+                     "input_tokens":state_values.get("input_tokens", 0),
+                     "output_tokens":state_values.get("output_tokens", 0)},
         }
         
     except Exception as e:

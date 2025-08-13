@@ -113,9 +113,9 @@ class WorkFlow():
                                        "max_cycle_executor":1,
                                        "recursion_limit": 7,
                                        "current_recursion":0,
-                                       "current_repo_branch":issue.state["current_repo_branch"],
-                                       "input_tokens":issue.state["input_tokens"],
-                                       "output_tokens":issue.state["output_tokens"]
+                                       "current_repo_branch":issue.state.get("current_repo_branch",[]),
+                                       "input_tokens":issue.state.get("input_tokens",0),
+                                       "output_tokens":issue.state.get("output_tokens",0)
                                        },self.config)
         return response
     def start_specific_node(self,state,starting_node):        
