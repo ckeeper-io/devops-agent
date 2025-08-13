@@ -111,25 +111,26 @@ class Nodes():
                 tool_call_id = getattr(msg, 'tool_call_id', None)
                 if tool_call_id:
                     trajectory.append({"from":"Tool Response", "content":msg.content,"id":tool_call_id})
-        previous_steps_actions=[]
-        tool_call_ids=[]
-        for step_action in state["previous_steps_actions"][:-3]:
-            if step_action["from"] == "Tool Call" and step_action["name"] not in ["run_gcloud_command","retrieve_logs"]:
-                tool_call_ids.append(step_action["id"])
-                continue
-            elif step_action["from"] == "Tool Call":
-                previous_steps_actions.append(step_action)
-            if step_action["from"] == "Tool Response" and step_action["id"] in tool_call_ids:
-                previous_steps_actions.append(step_action)
-            elif step_action["from"] == "Tool Response":
-                continue
-            if step_action["from"] in ["AI Executor","AI Planner"]:
-                previous_steps_actions.append(step_action)
-                tool_call_ids=[]
-        for step_action in state["previous_steps_actions"][-3:]:
-            previous_steps_actions.append(step_action)
+        # previous_steps_actions=[]
+        # tool_call_ids=[]
+        # for step_action in state["previous_steps_actions"][:-3]:
+        #     if step_action["from"] == "Tool Call" and step_action["name"] not in ["run_gcloud_command","retrieve_logs"]:
+        #         tool_call_ids.append(step_action["id"])
+        #         continue
+        #     elif step_action["from"] == "Tool Call":
+        #         previous_steps_actions.append(step_action)
+        #     if step_action["from"] == "Tool Response" and step_action["id"] in tool_call_ids:
+        #         previous_steps_actions.append(step_action)
+        #     elif step_action["from"] == "Tool Response":
+        #         continue
+        #     if step_action["from"] in ["AI Executor","AI Planner"]:
+        #         previous_steps_actions.append(step_action)
+        #         tool_call_ids=[]
+        # for step_action in state["previous_steps_actions"][-3:]:
+        #     previous_steps_actions.append(step_action)
 
-        return {"previous_steps_actions":previous_steps_actions+trajectory}
+        # return {"previous_steps_actions":previous_steps_actions+trajectory}
+        return {"previous_steps_actions":state.get("previous_steps_actions",[])+trajectory}
     def planner(self, state):
         """
         Planner node that analyzes the query and creates a plan for execution.
