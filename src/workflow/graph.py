@@ -10,7 +10,7 @@ from langgraph.prebuilt import ToolNode,tools_condition
 from langgraph.checkpoint.memory import MemorySaver
 import os
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
-from langfuse.langchain import CallbackHandler
+# from langfuse.langchain import CallbackHandler
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -100,8 +100,9 @@ class WorkFlow():
 
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
-        self.langfuse_handler = CallbackHandler()
-        self.config={'configurable':{'thread_id':issue.session_id},"recursion_limit": 200,"callbacks": [self.langfuse_handler]}
+        # self.langfuse_handler = CallbackHandler()
+        # self.config={'configurable':{'thread_id':issue.session_id},"recursion_limit": 200,"callbacks": [self.langfuse_handler]}
+        self.config={'configurable':{'thread_id':issue.session_id},"recursion_limit": 200}
     def __call__(self,issue):
         response=self.workflow.invoke({"query":issue.query,
                                        "codebase":issue.codebase,
