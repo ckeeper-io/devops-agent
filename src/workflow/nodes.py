@@ -228,7 +228,7 @@ class Nodes():
         # Check for structured completion response
         pattern = r"^reasoning:\s*(.+?)\s*step:\s*done$"
         if re.match(pattern, current_step, re.IGNORECASE | re.DOTALL):
-            return '__end__'
+            return 'summarizer'
 
         return "executor"
     def summarizer(self, state):

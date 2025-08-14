@@ -92,7 +92,7 @@ class WorkFlow():
         self.workflow.add_conditional_edges('initiate_state',nodes.router,{'planner':'planner','chatbot':"chatbot"})
 
         self.workflow.add_edge('chatbot','final_state')
-        self.workflow.add_conditional_edges('planner',nodes.planner_decision,{'executor':'executor','__end__':"summarizer"})
+        self.workflow.add_conditional_edges('planner',nodes.planner_decision,{'executor':'executor','summarizer':"summarizer"})
         self.workflow.add_conditional_edges('executor',tools_condition_executor,{'tools':'tools','preplanner':"preplanner",'summarizer':"summarizer"})
         self.workflow.add_edge('tools','executor')
         self.workflow.add_edge('preplanner','planner')
