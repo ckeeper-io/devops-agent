@@ -84,18 +84,20 @@ class WorkFlow():
         self.workflow.add_node('planner',nodes.planner)
         self.workflow.add_node('executor',nodes.executor)
         self.workflow.add_node('tools',custom_tool_node)
+        self.workflow.add_node('ask_step_approval_node',nodes.ask_step_approval_node)
         self.workflow.add_node('summarizer',nodes.summarizer)
         self.workflow.add_node('final_state',nodes.final_state)
 
         #EDGES
         self.workflow.add_edge(START,'initiate_state')
-        self.workflow.add_conditional_edges('initiate_state',nodes.router,{'planner':'planner','chatbot':"chatbot"})
+        self.workflow.add_conditional_edges('initiate_state',nodes.router,{'planner':'planner','chatbot':"chatbot","executor":"executor"})
 
         self.workflow.add_edge('chatbot','final_state')
-        self.workflow.add_conditional_edges('planner',nodes.planner_decision,{'executor':'executor','summarizer':"summarizer"})
+        self.workflow.add_conditional_edges('planner',nodes.planner_decision,{'ask_step_approval_node':'ask_step_approval_node','summarizer':"summarizer"})
         self.workflow.add_conditional_edges('executor',tools_condition_executor,{'tools':'tools','preplanner':"preplanner",'summarizer':"summarizer"})
         self.workflow.add_edge('tools','executor')
         self.workflow.add_edge('preplanner','planner')
+        self.workflow.add_edge('ask_step_approval_node','final_state')
         self.workflow.add_edge('summarizer','final_state')
 
         memory=MemorySaver()
@@ -116,7 +118,13 @@ class WorkFlow():
                                        "current_recursion":0,
                                        "current_repo_branch":issue.state.get("current_repo_branch",[]),
                                        "input_tokens":issue.state.get("input_tokens",0),
-                                       "output_tokens":issue.state.get("output_tokens",0)
+                                       "output_tokens":issue.state.get("output_tokens",0),
+                                       "messages_for_evaluation":issue.state.get("messages_for_evaluation",[]),
+                                       "executor_messages":issue.state.get("executor_messages",[]),
+                                       "ask_step_approval":issue.state.get("ask_step_approval",False),
+                                       "previous_steps_actions":issue.state.get("previous_steps_actions",[]),
+                                       "plan":issue.state.get("plan",[]),
+                                       "current_cycle":issue.state.get("current_cycle",0),
                                        },self.config)
         return response
     def start_specific_node(self,state,starting_node):        

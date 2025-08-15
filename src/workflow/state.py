@@ -19,7 +19,7 @@ class State(TypedDict):
     githubapp_privatekey: str
     sa_key_bucket_link: dict
     current_step: str
-    plans: list
+    plan: list
     previous_steps_actions: list
     step_action_markdown_format: str
     current_cycle: int
@@ -29,5 +29,6 @@ class State(TypedDict):
     output_tokens: int
     recursion_limit: int
     current_recursion: int
+    ask_step_approval: bool
     executor_messages: Annotated[list,add_messages]
     messages_for_evaluation: Annotated[list,add_messages]

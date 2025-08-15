@@ -35,7 +35,7 @@ class ChatRequest(BaseModel):
     state: dict
 class ChatBackgroundResponse(BaseModel):
     agent_response: str
-    plan: str
+    step: str
     status: str
     message: str
     agent_trajectory: str
@@ -77,13 +77,21 @@ def chat_background(issue: ChatRequest):
         logger.info(f"Input tokens used: {state_values.get('input_tokens',0)}, Output tokens used: {state_values.get('output_tokens',0)}")
         return {
             "agent_response": state_values.get("agent_response",""),
-            "plan":format_plans_to_markdown(state_values.get("plans", [])),
+            "step":format_plans_to_markdown([state_values.get("plan", ["Reasoning: No additional step required\nStep: DONE"])[-1]]),
             "status": "success",
             "message": "devops agent launched successfully.",
             "agent_trajectory":agent_trajectory,
             "state":{"current_repo_branch":state_values.get("current_repo_branch", []),
+                     "ask_step_approval": state_values.get("ask_step_approval",False),
                      "input_tokens":state_values.get("input_tokens", 0),
-                     "output_tokens":state_values.get("output_tokens", 0)},
+                     "output_tokens":state_values.get("output_tokens", 0),
+                     "messages_for_evaluation":state_values.get("messages_for_evaluation", []),
+                     "executor_messages":state_values.get("executor_messages", []),
+                     "previous_steps_actions":state_values.get("previous_steps_actions", []),
+                     "plan":state_values.get("plan", []),
+                     "current_cycle":state_values.get("current_cycle", 0)
+                     }
+                     
         }
         
     except Exception as e:

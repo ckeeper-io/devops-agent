@@ -75,7 +75,7 @@ def download_codebase(workspace_id,session_id,current_repo_branch,codebase,state
         download_tasks.append((bucket_name, blob.name, local_path, prefix))
 
     # Download files in parallel (max 10 concurrent downloads)
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=100) as executor:
         futures = [executor.submit(download_single_file, *task) for task in download_tasks]
         
         for future in as_completed(futures):

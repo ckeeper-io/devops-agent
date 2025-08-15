@@ -89,7 +89,7 @@ def upload_codebase(session_id,current_repo_branch):
             upload_tasks.append((bucket_name, local_path, blob_path))
     
     # Upload files in parallel (max 10 concurrent uploads)
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=100) as executor:
         futures = [executor.submit(upload_single_file, *task) for task in upload_tasks]
         
         for future in as_completed(futures):

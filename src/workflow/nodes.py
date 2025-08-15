@@ -69,10 +69,10 @@ class Nodes():
         """
         LLM-based router node that decides whether to send the query to the planner or to a simple chatbot.
         """
-        logger.info('entering router node')
-        # You can use a simple prompt to classify the query
-        # Load the system prompt template
 
+        logger.info('entering router node')
+        if state["ask_step_approval"]== True:
+            return "executor"
         system_prompt= load_prompt("router_prompt.jinja", chat_history=state["chat_history"])
         messages = [SystemMessage(content=system_prompt),
                     HumanMessage(content=f"User Query: {state['query']}\n")]
@@ -168,12 +168,12 @@ class Nodes():
             HumanMessage(content=f"User Query: {state['query']}\n")
         ]
         clear_messages = [RemoveMessage(id=msg.id) for msg in state['executor_messages']]
-        time.sleep(6)
+        # time.sleep(6)
         return {"executor_messages": clear_messages + executor_messages,
                 "previous_steps_actions":state.get('previous_steps_actions',[])+[{"from":"AI Planner","content":response.content}],
                 "step_action_markdown_format":step_action_markdown_format,
                 "current_step":response.content,
-                "plans":state.get('plans',[])+[response.content],
+                "plan":state.get('plan',[])+[response.content],
                 "current_cycle":0,
                 "current_recursion":state.get("current_recursion",0) + 1,
                 "input_tokens":response.usage_metadata["input_tokens"]+state.get('input_tokens',0),
@@ -204,7 +204,7 @@ class Nodes():
             response=[AIMessage(content="Alright, What do you think?")]
             return {"executor_messages":response,"messages_for_evaluation":response,"current_cycle":state['current_cycle']+1}
         logger.info('Agent sleeping')
-        time.sleep(6)
+        # time.sleep(6)
         logger.info('Wake up')
         return {"executor_messages":response,
                 "messages_for_evaluation":response,
@@ -230,7 +230,7 @@ class Nodes():
         if re.match(pattern, current_step, re.IGNORECASE | re.DOTALL):
             return 'summarizer'
 
-        return "executor"
+        return "ask_step_approval_node"
     def summarizer(self, state):
         """
         Summarizer node that provides a user-friendly summary of what the planner did.
@@ -242,8 +242,12 @@ class Nodes():
         response = self.llm_obj.llm.invoke(messages)
         return {"agent_response": response.content,
                 "input_tokens":response.usage_metadata["input_tokens"]+state.get('input_tokens',0),
-                "output_tokens":response.usage_metadata["output_tokens"]+state.get('output_tokens',0)}
+                "output_tokens":response.usage_metadata["output_tokens"]+state.get('output_tokens',0),
+                "ask_step_approval":False}
     
+
+    def ask_step_approval_node(self, state):
+        return {"ask_step_approval":True}
     def final_state(self,state):
         # USED to clean cache if ANY
         logger.info('entering final state')
