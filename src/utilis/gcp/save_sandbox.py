@@ -46,11 +46,11 @@ def upload_single_file(bucket_name, local_path, blob_path):
         logger.error(f"Could not upload {local_path} to gs://{bucket_name}/{blob_path}: {e}")
         return False
 
-def upload_codebase(session_id,current_repo_branch):
-    for repo_branch in current_repo_branch:
+def upload_codebase(state):
+    for repo_branch in state["current_repo_branch"]:
         repo_name=repo_branch["repository_url"].split("/")[-1]
         repo_name=repo_name.split(".git")[0]
-        command=f'cd .. && cd .. && cd tmp && cd {session_id} && cd codebase && cd {repo_name} && git checkout {repo_branch["original_branch"]}'
+        command=f'cd .. && cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git checkout {repo_branch["original_branch"]}'
         result= subprocess.run(
             command,
             cwd=current_dir,         # Start from current_dir
@@ -65,7 +65,7 @@ def upload_codebase(session_id,current_repo_branch):
     bucket = client.bucket(bucket_name)
 
     # Define local folder to upload
-    local_base = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp", session_id))
+    local_base = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp", state["session_id"]))
 
     if not os.path.exists(local_base):
         return f"Local folder {local_base} does not exist"
@@ -85,7 +85,7 @@ def upload_codebase(session_id,current_repo_branch):
             
             # Construct blob path relative to session_id root
             relative_path = os.path.relpath(local_path, local_base)
-            blob_path = f"{session_id}/{relative_path}"
+            blob_path = f"{state["session_id"]}/{relative_path}"
             upload_tasks.append((bucket_name, local_path, blob_path))
     
     # Upload files in parallel (max 10 concurrent uploads)
@@ -99,7 +99,7 @@ def upload_codebase(session_id,current_repo_branch):
                 logger.error(f"Upload task failed: {e}")
     
     # Delete the user_dir before ending the endpoint
-    local_base = Path(os.path.join(current_dir, "..", "..", "tmp", session_id))
+    local_base = Path(os.path.join(current_dir, "..", "..", "tmp", state["session_id"]))
     if local_base.exists() and local_base.is_dir():
         shutil.rmtree(local_base)
         logger.info(f"Deleted user_dir: {local_base}")

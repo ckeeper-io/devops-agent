@@ -45,13 +45,13 @@ def download_single_file(bucket_name, blob_name, local_path, prefix):
         logger.error(f"Failed to download {blob_name}: {e}")
         return False
 
-def download_codebase(workspace_id,session_id,current_repo_branch,codebase,state):
+def download_codebase(state):
 
     client = get_gcs_client()
     bucket_name = "sandbox_bucket_ckeeper"
     bucket = client.bucket(bucket_name)
 
-    prefix = f"{workspace_id}/codebase/"
+    prefix = f"{state["workspace_id"]}/codebase/"
     blobs = list(client.list_blobs(bucket_name, prefix=prefix))
 
     if not blobs:
@@ -62,7 +62,7 @@ def download_codebase(workspace_id,session_id,current_repo_branch,codebase,state
 
     # Prepare download tasks
     download_tasks = []
-    local_base = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp", session_id, "codebase"))
+    local_base = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp", state["session_id"], "codebase"))
     os.makedirs(local_base, exist_ok=True)
 
     for blob in blobs:
@@ -85,13 +85,13 @@ def download_codebase(workspace_id,session_id,current_repo_branch,codebase,state
                 logger.error(f"Download task failed: {e}")
     
     jwt_token = get_jwt(state['githubapp_privatekey'], state['githubapp_id'])
-    for project in codebase:
+    for project in state["codebase"]:
         repo_name=project["repository_url"].split("/")[-1]
         repo_name=repo_name.split(".git")[0]
         githubapp_installation_id = project['githubapp_installation_id']
         install_token = get_installation_token(jwt_token, githubapp_installation_id)
         authed_url = project["repository_url"].replace("https://", f"https://x_access-token:{install_token}@")
-        command=f'cd .. && cd .. && cd tmp && cd {session_id} && cd codebase && cd {repo_name} && git fetch {authed_url} && git reset --hard origin/{project["branch"]}'
+        command=f'cd .. && cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git fetch {authed_url} && git reset --hard origin/{project["branch"]}'
         result= subprocess.run(
             command,
             cwd=current_dir,         # Start from current_dir
@@ -101,10 +101,10 @@ def download_codebase(workspace_id,session_id,current_repo_branch,codebase,state
             text=True                # Decode output as string
         )
         logger.info(f"This is the result of git pull: {result}")
-    for repo_branch in current_repo_branch:
+    for repo_branch in state["current_repo_branch"]:
         repo_name=repo_branch["repository_url"].split("/")[-1]
         repo_name=repo_name.split(".git")[0]
-        command=f'cd .. && cd .. && cd tmp && cd {session_id} && cd codebase && cd {repo_name} && git checkout {repo_branch["agent_branch"]}'
+        command=f'cd .. && cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git checkout {repo_branch["agent_branch"]}'
         result= subprocess.run(
             command,
             cwd=current_dir,         # Start from current_dir
