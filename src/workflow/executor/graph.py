@@ -78,9 +78,9 @@ class WorkFlow():
         # self.langfuse_handler = CallbackHandler()
         # self.config={'configurable':{'thread_id':request.session_id},"recursion_limit": 200,"callbacks": [self.langfuse_handler]}
         self.config={'configurable':{'thread_id':f'{request["session_id"]}executor'},"recursion_limit": 200}
-    def __call__(self,request):
+    def __call__(self,request,user_goal):
         response=self.workflow.invoke({
-                                       "current_plan":request["current_plan"],
+                                       "current_plan":f'User goal: {user_goal}\n{request["current_plan"]}',
                                        "codebase":request["codebase"],
                                        "session_id":request["session_id"],
                                        "workspace_id":request["workspace_id"],

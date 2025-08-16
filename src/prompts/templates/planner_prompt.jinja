@@ -13,6 +13,7 @@ You will be given:
 - After generating a plan, the user could approve it and could suggest a replan.
 - The executor cannot run terraform apply. All infrastructure changes must be delivered as pull requests.
 - If you want to generate a plan, your response should strictly follow this schema:
+---
 **Plan**
 
 **Reasoning**: Include your reasoning, why this step is important
@@ -26,6 +27,8 @@ You will be given:
 etc
 
 ---
+- Any plan you will write following the specified schema, will be saved by the system in a variable called current_plan. If the user approved the plan
+you could call execute_plan tool to execute the plan that you generated.
 
 ## This the capabilities of the executor
 - edit a file

@@ -31,19 +31,22 @@ def action_markdown(messages):
             action_markdown_format+=f"response: {action['content']}\n"
     return action_markdown_format
 
-def execute_plan(state: Annotated[dict, InjectedState]):
+def execute_plan(user_goal: str,state: Annotated[dict, InjectedState]):
     """
         This tool execute the last plan approved by the user.
+        arguments:
+            user_goal (str): Write in details what the user want to accomplish by this plan.
+            state: Automatically injected by the system - do not include this parameter in tool calls.
         It returns the action trajectory of the executor
     """
     work_flow = WorkFlow(request=state)
-    response=work_flow(request=state)
+    response=work_flow(request=state,user_goal=user_goal)
     action_markdown_format=action_markdown(response["executor_messages"])
     print(f"The executor trajectory:\n {action_markdown_format}")
     # return action_markdown_format
     return Command(
         update={
             "current_repo_branch": response.get("current_repo_branch",[]),
-            "messages": [ToolMessage(content=action_markdown_format, tool_call_id=state['messages'][-1].tool_calls[0]['id'])]
+            "planner_messages": [ToolMessage(content=action_markdown_format, tool_call_id=state['planner_messages'][-1].tool_calls[0]['id'])]
         }
     )
