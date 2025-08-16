@@ -32,7 +32,7 @@ def create_file(file_path: str, content: str,state: Annotated[dict, InjectedStat
         - If the file already exists, it will be overwritten.
     """
     try:
-        codebase_dir = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"], "codebase"))
+        codebase_dir = os.path.abspath(os.path.join(current_dir, "..","..", "tmp", state["session_id"], "codebase"))
         codebase = os.listdir(codebase_dir)
         first_folder=file_path.split("/")[0]
         if first_folder not in codebase:

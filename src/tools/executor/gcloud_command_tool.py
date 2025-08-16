@@ -30,7 +30,7 @@ def run_gcloud_command(command: str, state: Annotated[dict, InjectedState]) -> s
         if command.split(' ')[0] != 'gcloud':
             return f"Error: gcloud command not found in the command: {command}"
             
-        sa_key_path = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"], "sa_key.json"))
+        sa_key_path = os.path.abspath(os.path.join(current_dir, "..","..", "tmp", state["session_id"], "sa_key.json"))
         
         # Get project id from sa_key.json
         with open(sa_key_path, "r") as f:

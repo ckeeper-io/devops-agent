@@ -55,11 +55,9 @@ def tools_condition_executor(state):
         raise ValueError(f"No messages found in input state to tool_edge: {state}")
     
     last_message = messages[-1]
-    if state["current_recursion"]>=state["recursion_limit"]:
-        return "summarizer"
     if hasattr(last_message, "tool_calls") and last_message.tool_calls:
         return "executor_tool_node"
-    return "preplanner"
+    return "final_state"
 
 class WorkFlow():
     def __init__(self,request):
@@ -68,11 +66,12 @@ class WorkFlow():
         self.workflow.add_node('initial_state',nodes.initiate_state)
         self.workflow.add_node('executor_agent',nodes.executor)
         self.workflow.add_node('executor_tool_node',executor_tool_node)
-
+        self.workflow.add_node('final_state',nodes.final_state)
 
         self.workflow.add_edge(START,'initial_state')
         self.workflow.add_edge("initial_state",'executor_agent')
-        self.workflow.add_conditional_edges('executor_agent',tools_condition_executor,{'executor_tool_node':'executor_tool_node','end':END})
+        self.workflow.add_conditional_edges('executor_agent',tools_condition_executor,{'executor_tool_node':'executor_tool_node','final_state':"final_state"})
+        self.workflow.add_edge("executor_tool_node",'executor_agent')
 
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
@@ -88,6 +87,9 @@ class WorkFlow():
                                        "githubapp_id":os.environ.get("GITHUBAPP_ID"),
                                        "githubapp_privatekey":os.environ.get("GITHUBAPP_PRIVATE_KEY"),
                                        "sa_key_bucket_link":request["sa_key_bucket_link"],
+                                       "current_repo_branch":request["current_repo_branch"],
+                                       "max_recursion_limit": 10,
+                                       "current_recursion":0
                                        },self.config)
         return response
     def return_state_value(self,state_name):

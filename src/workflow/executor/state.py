@@ -12,5 +12,8 @@ class ExecutorState(TypedDict):
     session_id: str
     workspace_id: str
     githubapp_id: str
+    current_repo_branch: str
     githubapp_privatekey: str
     sa_key_bucket_link: dict
+    max_recursion_limit: int
+    current_recursion: int

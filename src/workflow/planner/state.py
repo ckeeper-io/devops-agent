@@ -14,7 +14,6 @@ class PlannerState(TypedDict):
     current_repo_branch: List[RepoBranch]
     session_id: str
     workspace_id: str
-    chat_history: list
     githubapp_id: str
     githubapp_privatekey: str
     sa_key_bucket_link: dict

@@ -10,16 +10,14 @@ from tools.executor.list_directory_contents_tool import list_directory_contents
 from tools.executor.retrieve_log_tool import retrieve_logs
 from tools.executor.git_commands_tool import run_git_command
 from tools.executor.push_github_tool import push_changes
-import re
+from utilis.gcp.get_sakey import download_save_sakey
+from utilis.gcp.get_sandbox import download_codebase
+from utilis.gcp.save_sandbox import upload_codebase
 from llm_factory.google import GoogleGen
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
-import time
-import subprocess
 import os
-from pathlib import Path
-import shutil
-import json
 import  logging
+import time
 from jinja2 import Environment, FileSystemLoader
 
 logging.basicConfig(
@@ -30,7 +28,7 @@ logger = logging.getLogger(__name__)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def load_prompt(template_name, **kwargs):
-    env = Environment(loader=FileSystemLoader(os.path.join(current_dir, '..', 'prompts', 'templates')))
+    env = Environment(loader=FileSystemLoader(os.path.join(current_dir,'..', '..', 'prompts', 'templates')))
     template = env.get_template(template_name)
     return template.render(**kwargs)
 
@@ -52,6 +50,10 @@ class Nodes():
         self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)
     def initiate_state(self,state):
         logger.info('entering Executor initial state')
+        ## Download current session sandbox from  GCS bucket (if it does not exist then create a new bucket with session_id)
+        download_codebase(state=state)
+        ## save sa_key
+        download_save_sakey(state=state)
         system_prompt= load_prompt("executor_prompt.jinja",
             codebase=state['codebase'],
             tool_names=self.tool_names,
@@ -64,14 +66,19 @@ class Nodes():
         Uses the LLM with tools to execute the planned actions.
         """
         logger.info('entering executor node')
-        response=[self.llm_obj.llm_with_tools.invoke(state['executor_messages'])]
-        logger.info(f'executor agent thought: {response[0].content}\n')
-        logger.info(f'executor agent call tools: {response[0].additional_kwargs}\n\n') 
-        logger.info('Agent sleeping')
-        # time.sleep(6)
-        logger.info('Wake up')
-        return {"executor_messages":response}
+        if state.get("current_recursion",0)<state.get("max_recursion_limit",0):
+            response=[self.llm_obj.llm_with_tools.invoke(state['executor_messages'])]
+            logger.info(f'executor agent thought: {response[0].content}\n')
+            logger.info(f'executor agent call tools: {response[0].additional_kwargs}\n\n') 
+            logger.info('Agent sleeping')
+            time.sleep(6)
+            logger.info('Wake up')
+            return {"executor_messages":response, "current_recursion":state.get("current_recursion",0)+1}
+        else:
+            return {}
     def final_state(self,state):
         # USED to clean cache if ANY
         logger.info('entering Executor final state')
+        # Upload the current session box into bucket
+        upload_codebase(state=state)
         return {}

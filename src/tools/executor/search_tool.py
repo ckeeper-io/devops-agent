@@ -25,7 +25,7 @@ def search(query:str,state: Annotated[dict, InjectedState]):
     
 
     # Build the full command as a single shell string
-    command = f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && timeout 5s grep -rn --exclude="*.ipynb" "{query}"'
+    command = f'cd .. && cd .. && cd tmp && cd {state["session_id"]} && cd codebase && timeout 5s grep -rn --exclude="*.ipynb" "{query}"'
 
     # Run the command in a shell
     result = subprocess.run(

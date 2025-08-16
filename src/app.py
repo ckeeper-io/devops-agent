@@ -34,10 +34,7 @@ class ChatRequest(BaseModel):
     state: dict
 class ChatBackgroundResponse(BaseModel):
     agent_response: str
-    step: str
     status: str
-    message: str
-    agent_trajectory: str
     state: dict
 
 app.add_middleware(
@@ -71,7 +68,11 @@ def chat(request: ChatRequest):
         return {
             "agent_response": state_values.get("agent_response",""),
             "status": "success",
-            "state":state_values     
+            "state":{
+                "current_repo_branch":state_values.get("current_repo_branch",[]),
+                "current_plan":state_values.get("current_plan",""),
+                "planner_messages":state_values.get("planner_messages",""),
+            }    
         }
         
     except Exception as e:

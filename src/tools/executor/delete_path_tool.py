@@ -25,7 +25,7 @@ def delete_path(path: str, state: Annotated[dict, InjectedState]):
     """
     try:
         # Locate the session-specific codebase directory
-        codebase_dir = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"], "codebase"))
+        codebase_dir = os.path.abspath(os.path.join(current_dir, "..","..", "tmp", state["session_id"], "codebase"))
         codebase_repos = os.listdir(codebase_dir)
 
         # Ensure the path is not empty or suspicious

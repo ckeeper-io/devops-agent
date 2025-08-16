@@ -51,7 +51,7 @@ def download_codebase(state):
     bucket_name = "sandbox_bucket_ckeeper"
     bucket = client.bucket(bucket_name)
 
-    prefix = f"{state["workspace_id"]}/codebase/"
+    prefix = f'{state["workspace_id"]}/codebase/'
     blobs = list(client.list_blobs(bucket_name, prefix=prefix))
 
     if not blobs:
