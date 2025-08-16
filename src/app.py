@@ -65,7 +65,7 @@ def chat(request: ChatRequest):
         work_flow = WorkFlow(request=request)
         work_flow(request=request)
         state_values = work_flow.workflow.get_state(work_flow.config).values
-        logger.info(f"Current repository and branch: {state_values.get("current_repo_branch",[])}")
+        logger.info(f'Current repository and branch: {state_values.get("current_repo_branch",[])}')
         return {
             "agent_response": state_values.get("agent_response",""),
             "status": "success",
