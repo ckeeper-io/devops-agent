@@ -5,8 +5,7 @@ from pydantic import BaseModel
 
 class RepoBranch(BaseModel):
     repository_url: str
-    agent_branch: str
-    original_branch: str
+    branch: str
 
 class PlannerState(TypedDict):
     query: str

@@ -104,7 +104,7 @@ def download_codebase(state):
     for repo_branch in state["current_repo_branch"]:
         repo_name=repo_branch["repository_url"].split("/")[-1]
         repo_name=repo_name.split(".git")[0]
-        command=f'cd .. && cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git checkout {repo_branch["agent_branch"]}'
+        command=f'cd .. && cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git checkout {repo_branch["branch"]}'
         result= subprocess.run(
             command,
             cwd=current_dir,         # Start from current_dir
@@ -113,4 +113,4 @@ def download_codebase(state):
             stderr=subprocess.PIPE,  # Capture standard error
             text=True                # Decode output as string
         )
-        logger.info(f"This is the result of git checkout to agent_branch: {result}")
+        logger.info(f"This is the result of git checkout to latest branch: {result}")

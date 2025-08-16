@@ -2,7 +2,7 @@ from langgraph.prebuilt import InjectedState
 from workflow.executor.graph import WorkFlow
 from typing import Annotated
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
-
+from langgraph.types import Command
 
 def action_markdown(messages):
     trajectory = []
@@ -40,4 +40,10 @@ def execute_plan(state: Annotated[dict, InjectedState]):
     response=work_flow(request=state)
     action_markdown_format=action_markdown(response["executor_messages"])
     print(f"The executor trajectory:\n {action_markdown_format}")
-    return action_markdown_format
+    # return action_markdown_format
+    return Command(
+        update={
+            "current_repo_branch": response.get("current_repo_branch",[]),
+            "messages": [ToolMessage(content=action_markdown_format, tool_call_id=state['messages'][-1].tool_calls[0]['id'])]
+        }
+    )

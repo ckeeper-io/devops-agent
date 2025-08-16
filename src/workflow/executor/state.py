@@ -4,6 +4,9 @@ from langgraph.graph.message import add_messages
 from pydantic import BaseModel
 
 
+class RepoBranch(BaseModel):
+    repository_url: str
+    branch: str
 
 class ExecutorState(TypedDict):
     executor_messages: Annotated[list,add_messages]
@@ -12,7 +15,7 @@ class ExecutorState(TypedDict):
     session_id: str
     workspace_id: str
     githubapp_id: str
-    current_repo_branch: str
+    current_repo_branch: List[RepoBranch]
     githubapp_privatekey: str
     sa_key_bucket_link: dict
     max_recursion_limit: int

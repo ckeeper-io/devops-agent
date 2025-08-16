@@ -46,12 +46,32 @@ def upload_single_file(bucket_name, local_path, blob_path):
         logger.error(f"Could not upload {local_path} to gs://{bucket_name}/{blob_path}: {e}")
         return False
 
+
+def extract_current_branch(git_stdout: str) -> str:
+    for line in git_stdout.splitlines():
+        if line.strip().startswith("*"):
+            return line.strip().split()[1]  # The branch name is the second word
+    return None  # Fallback if not found
+
 def upload_codebase(state):
-    for repo_branch in state["current_repo_branch"]:
-        repo_name=repo_branch["repository_url"].split("/")[-1]
+    repo_branch=[]
+    for project in state["codebase"]:
+        repo_name=project["repository_url"].split("/")[-1]
         repo_name=repo_name.split(".git")[0]
-        command=f'cd .. && cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git checkout {repo_branch["original_branch"]}'
-        result= subprocess.run(
+
+        command=f'cd .. && cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git branch'
+        result = subprocess.run(
+            command,
+            cwd=current_dir,         # Start from current_dir
+            shell=True,              # Required for using 'cd' and '&&'
+            stdout=subprocess.PIPE,  # Capture standard output
+            stderr=subprocess.PIPE,  # Capture standard error
+            text=True                # Decode output as string
+        )
+        current_branch=extract_current_branch(result.stdout)
+        repo_branch.append({"repository_url":project["repository_url"],"branch":current_branch})
+        command=f'cd .. && cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git checkout {project["branch"]}'
+        result = subprocess.run(
             command,
             cwd=current_dir,         # Start from current_dir
             shell=True,              # Required for using 'cd' and '&&'
@@ -103,3 +123,4 @@ def upload_codebase(state):
     if local_base.exists() and local_base.is_dir():
         shutil.rmtree(local_base)
         logger.info(f"Deleted user_dir: {local_base}")
+    return repo_branch
