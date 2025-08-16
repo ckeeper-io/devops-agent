@@ -79,7 +79,7 @@ def upload_codebase(state):
             stderr=subprocess.PIPE,  # Capture standard error
             text=True                # Decode output as string
         )
-        logger.info("This is the result of git checkout to original_branch:",result)
+        logger.info(f"This is the result of git checkout to original_branch: {result}")
     client = get_gcs_client()
     bucket_name = "sandbox_bucket_ckeeper"
     bucket = client.bucket(bucket_name)
