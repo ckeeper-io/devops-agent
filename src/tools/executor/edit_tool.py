@@ -1,6 +1,4 @@
 import os
-import ast
-import subprocess
 from langgraph.prebuilt import InjectedState
 from typing_extensions import Annotated
 import logging
@@ -43,7 +41,7 @@ def edit(file_path: str, new_code: str, starting_line: int, ending_line: int, st
     starting_line = int(starting_line)
     ending_line = int(ending_line)
 
-    full_path = os.path.abspath(os.path.join(current_dir, "..", "tmp", state["session_id"], "codebase", file_path))
+    full_path = os.path.abspath(os.path.join(current_dir, "..","..", "tmp", state["session_id"], "codebase", file_path))
     session_dir = os.path.dirname(full_path)
 
     if not os.path.exists(full_path):

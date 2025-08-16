@@ -1,6 +1,5 @@
 import os
 import subprocess
-import json
 from typing_extensions import Annotated
 from langgraph.prebuilt import InjectedState
 
@@ -24,7 +23,7 @@ def run_git_command(command: str,path: str, state: Annotated[dict, InjectedState
         for d_cmd in DANGEROUS_GIT_COMMANDS:
             if d_cmd in command:
                 return f"You can not execute this command" 
-        cmd=f'cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {path} && {command}'
+        cmd=f'cd .. && cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {path} && {command}'
         result = subprocess.run(
                 cmd,
                 cwd=current_dir,         # Start from current_dir

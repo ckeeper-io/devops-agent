@@ -10,8 +10,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-def download_save_sakey(url,session_id):
-    url=url.split('//')
+def download_save_sakey(state):
+    url=state["sa_key_bucket_link"].split('//')
     url=url[1]
     url=url.split('/')
     sa_key_json = os.getenv('SA_KEY')
@@ -31,7 +31,7 @@ def download_save_sakey(url,session_id):
     blob_path = '/'.join(url[1:]) 
 
     # Local destination to save the file
-    local_destination = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp",session_id, "sa_key.json"))
+    local_destination = os.path.abspath(os.path.join(current_dir, "..", "..", "tmp",state["session_id"], "sa_key.json"))
 
     # Get bucket and blob
     bucket = client.bucket(bucket_name)

@@ -1,8 +1,6 @@
 # Create temporary backend config file
-import tempfile
 import os        # Execute terraform command
 import subprocess
-import sys
 import logging
 from langgraph.prebuilt import InjectedState
 from typing_extensions import Annotated
@@ -64,7 +62,7 @@ def terraform_command_executor(terraform_command: str, dir_execution: str,state:
         # Set env var and run Terraform
         env = os.environ.copy()
         env["GOOGLE_APPLICATION_CREDENTIALS"] = sa_key_path
-        cmd = f"cd .. && cd tmp && cd {state['session_id']} && cd codebase && cd {dir_execution} && {terraform_command}"
+        cmd = f"cd .. && cd .. && cd tmp && cd {state['session_id']} && cd codebase && cd {dir_execution} && {terraform_command}"
         result = subprocess.run(
             cmd,
             cwd=current_dir,
