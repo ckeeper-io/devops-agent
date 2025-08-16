@@ -99,7 +99,7 @@ def upload_codebase(state):
             local_path = os.path.join(root, file_name)
             
             # Skip files larger than 1MB
-            if os.path.getsize(local_path) > 1 * 1024 * 1024:
+            if os.path.getsize(local_path) > 3 * 1024 * 1024:
                 logger.error(f"Skipping large file ({os.path.getsize(local_path)/1024/1024:.1f}MB): {local_path}")
                 continue
             
