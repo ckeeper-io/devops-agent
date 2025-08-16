@@ -80,5 +80,5 @@ class Nodes():
         # USED to clean cache if ANY
         logger.info('entering Executor final state')
         # Upload the current session box into bucket
-        upload_codebase(state=state)
-        return {}
+        current_repo_branch=upload_codebase(state=state)
+        return {"current_repo_branch":current_repo_branch}
