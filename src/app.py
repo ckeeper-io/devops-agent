@@ -57,7 +57,7 @@ def root():
     return {"message": "DevOps Agent API", "docs": "/docs"}
 
 
-@app.post("/chat", response_model=ChatBackgroundResponse)
+@app.post("/chat_background", response_model=ChatBackgroundResponse)
 def chat(request: ChatRequest):
     try:
         logger.info("Workflow endpoint called")
