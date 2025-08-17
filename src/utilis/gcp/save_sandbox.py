@@ -69,6 +69,7 @@ def upload_codebase(state):
             text=True                # Decode output as string
         )
         current_branch=extract_current_branch(result.stdout)
+        logger.info(f"Current branch {current_branch}")
         repo_branch.append({"repository_url":project["repository_url"],"branch":current_branch})
         command=f'cd .. && cd .. && cd tmp && cd {state["session_id"]} && cd codebase && cd {repo_name} && git checkout {project["branch"]}'
         result = subprocess.run(

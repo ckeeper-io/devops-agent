@@ -81,4 +81,5 @@ class Nodes():
         logger.info('entering Executor final state')
         # Upload the current session box into bucket
         current_repo_branch=upload_codebase(state=state)
+        logger.info(f"This is the current repository branch {current_repo_branch}")
         return {"current_repo_branch":current_repo_branch}
