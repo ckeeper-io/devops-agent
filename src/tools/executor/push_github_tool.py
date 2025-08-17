@@ -3,7 +3,7 @@ from typing_extensions import Annotated
 import os
 import subprocess
 import logging
-from utilis.githubapp_privatekey import get_jwt, get_installation_token
+from utlis.githubapp_privatekey import get_jwt, get_installation_token
 
 logging.basicConfig(
     level=logging.INFO,

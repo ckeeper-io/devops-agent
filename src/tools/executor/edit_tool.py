@@ -2,7 +2,7 @@ import os
 from langgraph.prebuilt import InjectedState
 from typing_extensions import Annotated
 import logging
-from utilis.linter import infer_language_from_extension, check_syntax
+from utlis.linter import infer_language_from_extension, check_syntax
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'

@@ -6,7 +6,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 import subprocess
-from utilis.githubapp_privatekey import get_jwt, get_installation_token
+from utlis.githubapp_privatekey import get_jwt, get_installation_token
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
