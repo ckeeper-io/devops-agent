@@ -52,10 +52,9 @@ def execute_plan(user_goal: str,state: Annotated[dict, InjectedState]):
     logger.info(f"The executor trajectory:\n {action_markdown_format}")
     logger.info("ENNNNNNNNND**********************************************************************************")
     logger.info(f"This is the current repository branch {response['current_repo_branch']}")
-    # return action_markdown_format
     return Command(
         update={
-            "current_repo_branch": response.get("current_repo_branch",[]),
+            "current_repo_branch": ["well done"],
             "planner_messages": [ToolMessage(content=action_markdown_format, tool_call_id=state['planner_messages'][-1].tool_calls[0]['id'])]
         }
     )
