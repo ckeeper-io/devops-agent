@@ -19,28 +19,45 @@ def planner_tool_node(state):
     last_message = state['planner_messages'][-1]
     if not hasattr(last_message, 'tool_calls') or not last_message.tool_calls:
         return {}
-    
+
     tool_messages = []
+    state_updates = {}
+
     for tool_call in last_message.tool_calls:
         tool_name = tool_call['name']
         tool_args = tool_call['args']
-        
+
         tool_func = None
         for tool in Nodes().tools:
             if tool.__name__ == tool_name:
                 tool_func = tool
                 break
-        
+
         if tool_func:
             try:
+                # Filter out injected params
                 filtered_args = {k: v for k, v in tool_args.items() if k != 'state'}
                 result = tool_func(**filtered_args, state=state)
-                tool_message = ToolMessage(
-                    content=str(result),
-                    tool_call_id=tool_call['id'],
-                    name=tool_name
-                )
+
+                # Handle Command-returning tools
+                if isinstance(result, Command):
+                    updates = result.update or {}
+                    state_updates.update(updates)
+
+                    tool_message = ToolMessage(
+                        content=str(updates),   # you can use action_markdown_format if you want cleaner output
+                        tool_call_id=tool_call['id'],
+                        name=tool_name
+                    )
+                else:
+                    tool_message = ToolMessage(
+                        content=str(result),
+                        tool_call_id=tool_call['id'],
+                        name=tool_name
+                    )
+
                 tool_messages.append(tool_message)
+
             except Exception as e:
                 error_message = ToolMessage(
                     content=f"Error executing {tool_name}: {str(e)}",
@@ -48,7 +65,13 @@ def planner_tool_node(state):
                     name=tool_name
                 )
                 tool_messages.append(error_message)
-    return {"planner_messages": tool_messages}
+
+    # Merge tool messages + any state updates from Command
+    return {
+        "planner_messages": tool_messages,
+        **state_updates
+    }
+
 
 
 def tools_condition_planner(state):
