@@ -59,4 +59,5 @@ class Nodes():
     def final_state(self,state):
         # USED to clean cache if ANY
         logger.info('entering Planner final state')
+        logger.info(f"This is the current repository branch {state["current_repo_branch"]}")
         return {}
