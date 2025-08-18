@@ -106,7 +106,7 @@ def upload_codebase(state):
             
             # Construct blob path relative to session_id root
             relative_path = os.path.relpath(local_path, local_base)
-            blob_path = f'{state["session_id"]}/{relative_path}'
+            blob_path = f'{state["workspace_id"]}/{relative_path}'
             upload_tasks.append((bucket_name, local_path, blob_path))
     
     # Upload files in parallel (max 10 concurrent uploads)

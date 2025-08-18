@@ -10,7 +10,7 @@ class RepoBranch(BaseModel):
 class PlannerState(TypedDict):
     query: str
     codebase: list
-    current_repo_branch: List[RepoBranch]
+    current_repo_branch: list
     session_id: str
     workspace_id: str
     githubapp_id: str

@@ -3,6 +3,13 @@ from workflow.executor.graph import WorkFlow
 from typing import Annotated
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
 from langgraph.types import Command
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 def action_markdown(messages):
     trajectory = []
@@ -42,7 +49,9 @@ def execute_plan(user_goal: str,state: Annotated[dict, InjectedState]):
     work_flow = WorkFlow(request=state)
     response=work_flow(request=state,user_goal=user_goal)
     action_markdown_format=action_markdown(response["executor_messages"])
-    print(f"The executor trajectory:\n {action_markdown_format}")
+    logger.info(f"The executor trajectory:\n {action_markdown_format}")
+    logger.info("ENNNNNNNNND**********************************************************************************")
+    logger.info(f"This is the current repository branch {response['current_repo_branch']}")
     # return action_markdown_format
     return Command(
         update={
