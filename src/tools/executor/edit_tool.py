@@ -1,8 +1,9 @@
 import os
 from langgraph.prebuilt import InjectedState
 from typing_extensions import Annotated
+import requests
 import logging
-from utlis.linter import infer_language_from_extension, check_syntax
+from utilis.linter import infer_language_from_extension, check_syntax
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -68,5 +69,14 @@ def edit(file_path: str, new_code: str, starting_line: int, ending_line: int, st
 
     with open(full_path, "w") as file:
         file.writelines(updated_lines)
+    add_file_url=os.environ.get("GITHUBAPP_ID")+"/session/edit_file"
+    payload = {
+        "session_id": state["session_id"],
+        "file_path": file_path,
+        "file_content": updated_code,
+        "workspace_id": state["workspace_id"]
+    }
+
+    requests.post(add_file_url, json=payload)
 
     return "File edited successfully"

@@ -2,7 +2,7 @@ from langgraph.prebuilt import InjectedState
 from typing_extensions import Annotated
 import os
 import logging
-
+import requests
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -55,7 +55,15 @@ def create_file(file_path: str, content: str,state: Annotated[dict, InjectedStat
         # Write the file
         with open(abs_path, 'w', encoding='utf-8') as f:
             f.write(content)
+        add_file_url=os.environ.get("GITHUBAPP_ID")+"/session/add_file"
+        payload = {
+            "session_id": state["session_id"],
+            "file_path": file_path,
+            "file_content": content,
+            "workspace_id": state["workspace_id"]
+        }
 
+        requests.post(add_file_url, json=payload)
         return {"success": f"File created at {abs_path}"}
     except Exception as e:
         return {"error": str(e)}

@@ -4,7 +4,7 @@ import os
 import subprocess
 import requests
 import logging
-from utlis.githubapp_privatekey import get_jwt, get_installation_token
+from utilis.githubapp_privatekey import get_jwt, get_installation_token
 
 logging.basicConfig(
     level=logging.INFO,
