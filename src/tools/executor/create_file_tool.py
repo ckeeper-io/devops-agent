@@ -55,7 +55,7 @@ def create_file(file_path: str, content: str,state: Annotated[dict, InjectedStat
         # Write the file
         with open(abs_path, 'w', encoding='utf-8') as f:
             f.write(content)
-        add_file_url=os.environ.get("GITHUBAPP_ID")+"/session/add_file"
+        add_file_url=os.environ.get("KNOWLEDGE_GRAPH_MANGER_URL")+"/session/add_file"
         payload = {
             "session_id": state["session_id"],
             "file_path": file_path,

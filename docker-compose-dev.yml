@@ -15,5 +15,3 @@ services:
     environment:
       - GITHUBAPP_USER_NAME=${GITHUBAPP_USER_NAME}
       - GITHUBAPP_USER_EMAIL=${GITHUBAPP_USER_EMAIL}
-    # extra_hosts:
-    #   - "host.docker.internal:host-gateway"

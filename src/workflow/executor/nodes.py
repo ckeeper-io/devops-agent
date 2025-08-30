@@ -2,7 +2,7 @@ import sys
 from tools.executor.edit_tool import edit
 from tools.executor.pr_tool import create_pull_request
 from tools.executor.view_tool import view
-from tools.executor.search_tool import search
+from tools.executor.search_tool import search_by_grep,search_by_natural_language_query
 from tools.executor.gcloud_command_tool import run_gcloud_command
 from tools.executor.terraform_tool import terraform_command_executor
 from tools.executor.create_file_tool import create_file
@@ -39,9 +39,9 @@ class Nodes():
         self.tools=[edit,
         create_pull_request,
         view,
+        search_by_natural_language_query,
         terraform_command_executor,
         create_file,
-        list_directory_contents,
         retrieve_logs,
         run_gcloud_command,
         run_git_command,
