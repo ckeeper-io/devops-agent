@@ -60,10 +60,10 @@ def edit(file_path: str, new_code: str, starting_line: int, ending_line: int, st
 
     updated_code = "".join(updated_lines)
     language = infer_language_from_extension(file_path)
-    syntax_feedback = check_syntax(language, updated_code, file_path, session_dir)
+    # syntax_feedback = check_syntax(language, updated_code, file_path, session_dir)
 
-    if syntax_feedback:
-        return f"Syntax check failed: {syntax_feedback}"
+    # if syntax_feedback:
+    #     return f"Syntax check failed: {syntax_feedback}"
 
     # Save the file
 
