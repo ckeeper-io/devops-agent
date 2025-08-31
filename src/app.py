@@ -71,7 +71,8 @@ def chat(request: ChatRequest):
             "state":{
                 "current_repo_branch":state_values.get("current_repo_branch",[]),
                 "current_plan":state_values.get("current_plan",""),
-                "planner_messages":state_values.get("planner_messages",""),
+                "planner_messages":state_values.get("planner_messages",[]),
+                "executor_state":state_values.get("executor_state",{})
             }    
         }
         

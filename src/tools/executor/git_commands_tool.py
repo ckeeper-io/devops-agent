@@ -8,7 +8,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 DANGEROUS_GIT_COMMANDS = ['push','remote','config']
 def run_git_command(command: str,path: str, state: Annotated[dict, InjectedState]) -> str:
     """
-    Execute a git command.
+    Execute a git command. Only commands that starts with git keyword are eligible.
     Args:
         command (str): (e.g., "git add ."), Those commands are not eligible ['push','remote','config']
         path (str): Relative path from the codebase root. This where you want to execute the git command
