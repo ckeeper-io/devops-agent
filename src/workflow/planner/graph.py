@@ -13,7 +13,7 @@ import os
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langgraph.types import Command
 
-# from langfuse.langchain import CallbackHandler
+from langfuse.langchain import CallbackHandler
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -47,7 +47,7 @@ def planner_tool_node(state):
                     state_updates.update(updates)
 
                     tool_message = ToolMessage(
-                        content=str(updates),   # you can use action_markdown_format if you want cleaner output
+                        content=str(updates),
                         tool_call_id=tool_call['id'],
                         name=tool_name
                     )
@@ -68,7 +68,6 @@ def planner_tool_node(state):
                 )
                 tool_messages.append(error_message)
 
-    # Merge tool messages + any state updates from Command
     return {
         "planner_messages": tool_messages,
         **state_updates
@@ -104,9 +103,9 @@ class WorkFlow():
 
         memory=MemorySaver()
         self.workflow = self.workflow.compile(checkpointer=memory)
-        # self.langfuse_handler = CallbackHandler()
-        # self.config={'configurable':{'thread_id':request.session_id},"recursion_limit": 200,"callbacks": [self.langfuse_handler]}
-        self.config={'configurable':{'thread_id':request.session_id},"recursion_limit": 10}
+        self.langfuse_handler = CallbackHandler()
+        self.config={'configurable':{'thread_id':request.session_id},"recursion_limit": 100,"callbacks": [self.langfuse_handler]}
+        # self.config={'configurable':{'thread_id':request.session_id},"recursion_limit": 10}
     def __call__(self,request):
         response=self.workflow.invoke({"query":request.query,
                                        "codebase":request.codebase,
@@ -117,7 +116,8 @@ class WorkFlow():
                                        "sa_key_bucket_link":request.sa_key_bucket_link,
                                        "current_repo_branch":request.state.get("current_repo_branch",[]),
                                        "planner_messages":raw_to_messages(request.state.get("planner_messages",[])),
-                                       "current_plan":request.state.get("current_plan","")
+                                       "current_plan":request.state.get("current_plan",""),
+                                       "executor_state":request.state.get("executor_state",{})
                                        },self.config)
         return response
     def return_state_value(self,state_name):
