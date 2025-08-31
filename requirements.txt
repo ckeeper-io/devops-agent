@@ -21,4 +21,4 @@ google-cloud-iam
 google-cloud-storage
 PyJWT[crypto]
 pymongo
-# langfuse
+langfuse

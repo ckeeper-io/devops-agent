@@ -56,9 +56,18 @@ class Nodes():
         download_save_sakey(state=state)
         system_prompt= load_prompt("executor_prompt.jinja",
             codebase=state['codebase'],
-            tool_names=self.tool_names,
-            plan=state["current_plan"])
-        return {"executor_messages":[SystemMessage(content=system_prompt),HumanMessage(content=".")]}
+            tool_names=self.tool_names)
+        human_message=f"**plan**:\n {state["current_plan"]}"
+        if len(state.get("executor_messages",[]))>1:
+            messages = [
+                HumanMessage(content=human_message)
+            ]
+        else:
+            messages = [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=human_message)
+            ]
+        return {"executor_messages":messages}
     
     def executor(self, state):
         """

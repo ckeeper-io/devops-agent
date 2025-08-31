@@ -80,7 +80,7 @@ class WorkFlow():
         self.config={'configurable':{'thread_id':f'{request["session_id"]}executor'},"recursion_limit": 200}
     def __call__(self,request,user_goal):
         response=self.workflow.invoke({
-                                       "current_plan":f'User goal: {user_goal}\n{request["current_plan"]}',
+                                       "current_plan":f'User goal: {user_goal}\n{request.get("current_plan","")}',
                                        "codebase":request["codebase"],
                                        "session_id":request["session_id"],
                                        "workspace_id":request["workspace_id"],
@@ -89,7 +89,8 @@ class WorkFlow():
                                        "sa_key_bucket_link":request["sa_key_bucket_link"],
                                        "current_repo_branch":request["current_repo_branch"],
                                        "max_recursion_limit": 10,
-                                       "current_recursion":0
+                                       "current_recursion":0,
+                                       "executor_messages":(request.get("executor_state",{})).get("executor_messages",[])
                                        },self.config)
         return response
     def return_state_value(self,state_name):

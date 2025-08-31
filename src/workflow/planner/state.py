@@ -19,3 +19,4 @@ class PlannerState(TypedDict):
     current_plan: str
     agent_response: str
     planner_messages: Annotated[list,add_messages]
+    executor_state: dict
