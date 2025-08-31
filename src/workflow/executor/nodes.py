@@ -83,7 +83,7 @@ class Nodes():
             logger.info('Agent sleeping')
             time.sleep(6)
             logger.info('Wake up')
-            return {"executor_messages":response, "current_recursion":state.get("current_recursion",0)+1}
+            return {"executor_messages":response,"messages_to_planner":response, "current_recursion":state.get("current_recursion",0)+1}
         else:
             return {}
     def final_state(self,state):

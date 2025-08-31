@@ -47,7 +47,7 @@ def executor_tool_node(state):
                 )
                 tool_messages.append(error_message)
     
-    return {"executor_messages": tool_messages}
+    return {"executor_messages": tool_messages,"messages_to_planner":tool_messages}
 
 def tools_condition_executor(state):
     messages = state.get("executor_messages", [])

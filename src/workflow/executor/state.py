@@ -10,6 +10,7 @@ class RepoBranch(BaseModel):
 
 class ExecutorState(TypedDict):
     executor_messages: Annotated[list,add_messages]
+    messages_to_planner:Annotated[list,add_messages]
     current_plan: str
     codebase: list
     session_id: str

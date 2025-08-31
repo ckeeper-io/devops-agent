@@ -37,7 +37,7 @@ def extract_current_branch(git_stdout: str) -> str:
 
 def push_changes(path,state: Annotated[dict, InjectedState]):
     """
-    This tool pushs changes to github
+    This tool pushs changes to github. It could force-push changes.
 
     Args:
         path (str): Relative path from the codebase root. This where push command is going to be executed

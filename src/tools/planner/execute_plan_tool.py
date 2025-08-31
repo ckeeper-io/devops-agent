@@ -48,7 +48,7 @@ def execute_plan(user_goal: str,state: Annotated[dict, InjectedState]):
     """
     work_flow = WorkFlow(request=state)
     response=work_flow(request=state,user_goal=user_goal)
-    action_markdown_format=action_markdown(response["executor_messages"])
+    action_markdown_format=action_markdown(response["messages_to_planner"])
     logger.info(f"The executor trajectory:\n {action_markdown_format}")
     logger.info("ENNNNNNNNND**********************************************************************************")
     logger.info(f"This is the current repository branch {response['current_repo_branch']}")
