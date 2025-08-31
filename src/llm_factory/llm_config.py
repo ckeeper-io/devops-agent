@@ -14,5 +14,10 @@ LLM_CONFIG = {
         "provider": "openai",
         "model_name": "gpt-3.5-turbo",
         "api_key_env": "OPENAI_API_KEY"
+    },
+    "vertex_ai": {
+        "provider": "vertex_ai",
+        "model_name": "gemini-2.5-pro",
+        "api_key_env": "SA_KEY"
     }
 }
