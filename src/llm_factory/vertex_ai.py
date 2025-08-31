@@ -8,7 +8,7 @@ import os
 class VertexAIGen():
     def __init__(self):
         config = LLM_CONFIG["vertex_ai"]
-        sa_key = os.getenv(config["SA_KEY"])
+        sa_key = os.getenv(config["api_key_env"])
         credentials = service_account.Credentials.from_service_account_info(
             json.loads(sa_key)
         )
