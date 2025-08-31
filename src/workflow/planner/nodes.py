@@ -1,6 +1,7 @@
 from tools.planner.execute_plan_tool import execute_plan
 import re
 from llm_factory.google import GoogleGen
+from llm_factory.vertex_ai import VertexAIGen
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
 import os
 
@@ -22,7 +23,7 @@ def load_prompt(template_name, **kwargs):
 
 class Nodes():
     def __init__(self):
-        self.llm_obj=GoogleGen()
+        self.llm_obj=VertexAIGen()
         self.tools=[execute_plan]
         self.tool_names=[func.__name__ for func in self.tools]
         self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)

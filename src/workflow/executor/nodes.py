@@ -14,6 +14,7 @@ from utilis.gcp.get_sakey import download_save_sakey
 from utilis.gcp.get_sandbox import download_codebase
 from utilis.gcp.save_sandbox import upload_codebase
 from llm_factory.google import GoogleGen
+from llm_factory.vertex_ai import VertexAIGen
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
 import os
 import  logging
@@ -35,7 +36,7 @@ def load_prompt(template_name, **kwargs):
 
 class Nodes():
     def __init__(self):
-        self.llm_obj=GoogleGen()
+        self.llm_obj=VertexAIGen()
         self.tools=[edit,
         create_pull_request,
         view,
