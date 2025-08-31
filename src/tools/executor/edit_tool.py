@@ -56,7 +56,7 @@ def edit(file_path: str, new_code: str, starting_line: int, ending_line: int, st
 
     # Patch the lines
     updated_lines = lines[:]
-    updated_lines[starting_line - 1:ending_line] = [new_code if new_code.endswith("\n") else new_code + "\n"]
+    updated_lines[starting_line - 1:ending_line+1] = [new_code if new_code.endswith("\n") else new_code + "\n"]
 
     updated_code = "".join(updated_lines)
     language = infer_language_from_extension(file_path)
