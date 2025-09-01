@@ -42,7 +42,6 @@ class Nodes():
         view,
         search_by_natural_language_query,
         terraform_command_executor,
-        list_directory_contents,
         create_file,
         retrieve_logs,
         run_gcloud_command,
