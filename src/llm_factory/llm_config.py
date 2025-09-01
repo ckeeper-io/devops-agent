@@ -22,6 +22,6 @@ LLM_CONFIG = {
         "provider": "vertex_ai",
         "model_name": "gemini-2.5-pro",
         "api_key_env": "SA_KEY",
-        "sleep_time":1
+        "sleep_time":3
     }
 }
