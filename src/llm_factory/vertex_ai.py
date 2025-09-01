@@ -10,6 +10,7 @@ class VertexAIGen():
     def __init__(self):
         load_dotenv()
         config = LLM_CONFIG["vertex_ai"]
+        self.sleep_time=config["sleep_time"]
         sa_key = os.getenv(config["api_key_env"])
         credentials = service_account.Credentials.from_service_account_info(
             json.loads(sa_key)

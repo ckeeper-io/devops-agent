@@ -34,6 +34,11 @@ etc
 ---
 - Any plan you will write following the specified schema, will be saved by the system in a variable called current_plan. If the user approved the plan
 you could call execute_plan tool to execute the plan that you generated.
+- You are NOT allowed to call execute_plan unless:
+  1. You have generated a plan in the required schema, AND
+  2. The user has explicitly approved the plan.
+  
+- If you do not produce a plan in schema format, you must NOT call execute_plan.
 - Current_plan variable only contain your last generated plan. For example, if a user write a plan and tell you to execute it, you should first rewrite
 the plan and wait for the user approval.
 

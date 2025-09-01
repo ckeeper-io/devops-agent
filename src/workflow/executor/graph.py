@@ -88,7 +88,7 @@ class WorkFlow():
                                        "githubapp_privatekey":os.environ.get("GITHUBAPP_PRIVATE_KEY"),
                                        "sa_key_bucket_link":request["sa_key_bucket_link"],
                                        "current_repo_branch":request["current_repo_branch"],
-                                       "max_recursion_limit": 10,
+                                       "max_recursion_limit": 30,
                                        "current_recursion":0,
                                        "executor_messages":(request.get("executor_state",{})).get("executor_messages",[])
                                        },self.config)

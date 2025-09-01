@@ -42,6 +42,7 @@ class Nodes():
         view,
         search_by_natural_language_query,
         terraform_command_executor,
+        list_directory_contents,
         create_file,
         retrieve_logs,
         run_gcloud_command,
@@ -81,7 +82,7 @@ class Nodes():
             logger.info(f'executor agent thought: {response[0].content}\n')
             logger.info(f'executor agent call tools: {response[0].additional_kwargs}\n\n') 
             logger.info('Agent sleeping')
-            time.sleep(6)
+            time.sleep(self.llm_obj.sleep_time)
             logger.info('Wake up')
             return {"executor_messages":response,"messages_to_planner":response, "current_recursion":state.get("current_recursion",0)+1}
         else:
