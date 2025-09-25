@@ -13,6 +13,7 @@ from tools.executor.push_github_tool import push_changes
 from utilis.gcp.get_sakey import download_save_sakey
 from utilis.gcp.get_sandbox import download_codebase
 from utilis.gcp.save_sandbox import upload_codebase
+from utilis.get_project_structure import get_folder_tree
 from llm_factory.google import GoogleGen
 from llm_factory.vertex_ai import VertexAIGen
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
@@ -57,7 +58,8 @@ class Nodes():
         download_save_sakey(state=state)
         system_prompt= load_prompt("executor_prompt.jinja",
             codebase=state['codebase'],
-            tool_names=self.tool_names)
+            tool_names=self.tool_names,
+            project_structure=get_folder_tree(root_dir=os.path.join(current_dir,'..', '..', 'tmp', state["session_id"],"codebase")))
         human_message=f'**plan**:\n {state["current_plan"]}'
         if len(state.get("executor_messages",[]))>1:
             messages = [

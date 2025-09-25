@@ -5,6 +5,7 @@ Given a plan from the user, your task is only to execute it given the provided t
 You will be provided with the following information:
 - **Codebase**: Codebase that you will work on. It has github links, default branch and metadata.
 - **Tools**: Tools that you are provided with to finish the tasks.
+- **project_structure**: The project structure in tree format
 
 ## Guidelines:
 - You CANNOT execute `terraform apply` commands. All infrastructure changes, 
@@ -40,4 +41,6 @@ Do your tool call if required.
 **Codebase**: {{codebase}}
 
 **Tools**: {{tool_names}}
+
+**project_structure**: {{project_structure}}
 
