@@ -4,7 +4,6 @@ from llm_factory.google import GoogleGen
 from llm_factory.vertex_ai import VertexAIGen
 from langchain_core.messages import AIMessage,HumanMessage,SystemMessage,ToolMessage,RemoveMessage
 import os
-from utilis.get_project_structure import get_folder_tree
 import  logging
 from jinja2 import Environment, FileSystemLoader
 
@@ -31,8 +30,7 @@ class Nodes():
         logger.info('entering Planner initial state')
         ## prepare planner prompt:
         system_prompt= load_prompt("planner_prompt.jinja",
-            codebase=state['codebase'],
-            project_structure=get_folder_tree(root_dir=os.path.join(current_dir,'..', '..', 'tmp', state["session_id"],"codebase")))
+            codebase=state['codebase'])
         ## Create messages for the planner
         if len(state["planner_messages"])>1:
             messages = [
