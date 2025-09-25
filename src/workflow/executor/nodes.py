@@ -36,7 +36,7 @@ def load_prompt(template_name, **kwargs):
 
 class Nodes():
     def __init__(self):
-        self.llm_obj=VertexAIGen()
+        self.llm_obj=GoogleGen()
         self.tools=[edit,
         create_pull_request,
         view,

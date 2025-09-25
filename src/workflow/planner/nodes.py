@@ -23,7 +23,7 @@ def load_prompt(template_name, **kwargs):
 
 class Nodes():
     def __init__(self):
-        self.llm_obj=VertexAIGen()
+        self.llm_obj=GoogleGen()
         self.tools=[execute_plan]
         self.tool_names=[func.__name__ for func in self.tools]
         self.llm_obj.llm_with_tools=self.llm_obj.llm.bind_tools(self.tools)
