@@ -1,4 +1,4 @@
-from workflow.graph import WorkFlow
+from workflow.planner.graph import WorkFlow
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 import os
 import logging
@@ -7,8 +7,10 @@ from typing import Dict
 import json
 import subprocess
 import string
+import shutil
 import random
-from tools.terraform_tool import *
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -16,29 +18,62 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# List of allowed origins (for example, frontend URLs)
+origins = [
+    "*",
+]
+
+class ChatRequest(BaseModel):
+    query: str
+    codebase: list
+    workspace_id: str
+    session_id: str
+    sa_key_bucket_link: str
+    state: dict
+class ChatBackgroundResponse(BaseModel):
+    agent_response: str
+    status: str
+    state: dict
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,            # Origins that are allowed to make requests
+    allow_credentials=True,
+    allow_methods=["*"],              # Allow all HTTP methods: GET, POST, PUT, DELETE, etc.
+    allow_headers=["*"],              # Allow all headers
+)
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for the DevOps agent API."""
+    return {"status": "healthy", "message": "DevOps agent API is running"}
 
 
+@app.get("/")
+def root():
+    """Root endpoint that redirects to docs."""
+    return {"message": "DevOps Agent API", "docs": "/docs"}
 
 
-def generate_random_string():
-    letters_and_digits = string.ascii_letters + string.digits
-    random_string = ''.join(random.choice(letters_and_digits) for i in range(10))
-    return random_string
-@app.post("/devopsagent", response_model=Dict[str, str])
-def devops_agent(issue: dict):
+@app.post("/chat_background", response_model=ChatBackgroundResponse)
+def chat(request: ChatRequest):
     try:
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        user_dir=f'run_{issue["workspace_id"]}_{generate_random_string()}'
-        folder_path = Path(os.path.join(current_dir,"tmp",user_dir,"codebase"))
-        folder_path.mkdir(parents=True, exist_ok=True)
-        work_flow = WorkFlow(user_dir=user_dir)
-        work_flow(issue=issue,user_dir=user_dir)
-        
-        # Log workflow state
-        work_flow.show_state()
+        logger.info("Workflow endpoint called")
+        logger.info("/////////////////////////:")
+        work_flow = WorkFlow(request=request)
+        work_flow(request=request)
+        state_values = work_flow.workflow.get_state(work_flow.config).values
+        logger.info(f'Current repository and branch: {state_values.get("current_repo_branch",[])}')
         return {
+            "agent_response": state_values.get("agent_response",""),
             "status": "success",
-            "message": "devops agent launched successfully."
+            "state":{
+                "current_repo_branch":state_values.get("current_repo_branch",[]),
+                "current_plan":state_values.get("current_plan",""),
+                "planner_messages":state_values.get("planner_messages",[]),
+                "executor_state":state_values.get("executor_state",{})
+            }    
         }
         
     except Exception as e:
@@ -46,45 +81,6 @@ def devops_agent(issue: dict):
         raise HTTPException(
             status_code=500,
             detail=f"Failed to launch workflow: {str(e)}"
-        )
-
-
-
-@app.post("/selfhealing", response_model=Dict[str, str])
-def self_healing(info: dict):    
-    try:
-        logger.info("Selfhealing endpoint called")
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        resource_info = None
-        if 'incident' in info and 'resource' in info['incident']:
-            resource_info = info['incident']['resource']
-            logger.info(f"Resource information extracted")
-        else:
-            logger.info("No resource information found in incident")
-        
-        if resource_info:
-            try:
-                # Create a query for the devops agent
-
-                payload=info['incident']['policy_user_labels']
-                payload['query']=f"Analyze and fix issues with resource: {resource_info}"
-                ## Those value are hardcoded until the backend or database is ready 
-                payload['codebase']=[{"repository_url":"https://github.com/ckeeper-io/foundation.git","branch":"main", "metadata":"This repository contains all terraform code"},{"repository_url":"https://github.com/ckeeper-io/iac-agent.git","branch":"develop", "metadata":"In this repo we develop an agent tool"},{"repository_url":"https://github.com/ckeeper-io/agent-eval.git","branch":"main", "metadata":"In this repo we develop the evaluation"}]
-                payload['sa_key_bucket_link']="gs://sa_keys_bucket/ckeeper.json"
-                # Call the devops agent endpoint
-                devops_response = devops_agent(payload)
-                
-            except Exception as devops_error:
-                logger.error(f"Error calling devops agent: {str(devops_error)}")
-        return {
-            "status": "success",
-            "message": "selfhealing endpoint launched successfully."
-        }       
-    except Exception as e:
-        logger.error(f"Error launching selfhealing endpoint: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to launch selfhealing endpoint: {str(e)}"
         )
     
 @app.post("/test", response_model=Dict[str, str])
@@ -105,50 +101,3 @@ def test(info: dict):
             status_code=500,
             detail=f"Failed to launch test endpoint: {str(e)}"
         )
-    
-
-@app.post("/test_terraform_tool")
-def test_terraform_tool(issue: dict):
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(current_dir, "sa_key.json"), "w") as f:
-        json.dump(issue['sa_key'], f)
-
-    # command='export GOOGLE_APPLICATION_CREDENTIALS="../sa_key.json"'
-    # result=subprocess.run(
-    #     command,
-    #     cwd=current_dir,
-    #     shell=True,
-    #     stdout=subprocess.PIPE,
-    #     stderr=subprocess.PIPE,
-    #     text=True
-    # )
-    github_token=os.environ.get("GITHUB_TOKEN")
-    command=f'cd codebase && git clone https://{github_token}@github.com/{issue["github_repositories"][0]}.git'
-    result = subprocess.run(
-        command,
-        cwd=current_dir,         # Start from current_dir
-        shell=True,              # Required for using 'cd' and '&&'
-        stdout=subprocess.PIPE,  # Capture standard output
-        stderr=subprocess.PIPE,  # Capture standard error
-        text=True                # Decode output as string
-    )
-    # command='export GOOGLE_APPLICATION_CREDENTIALS="sa_key.json"'
-    # result=subprocess.run(
-    #     command,
-    #     cwd=current_dir,
-    #     shell=True,
-    #     stdout=subprocess.PIPE,
-    #     stderr=subprocess.PIPE,
-    #     text=True
-    # )
-    # result=terraform_command_executor("terraform plan","foundation")
-    # logger.info(result['stdout'])
-    # logger.info(result['stderr'])
-    result=terraform_command_executor("terraform init -backend-config=backend.config","foundation")
-    logger.info(result['stdout'])
-    logger.info(result['stderr'])
-
-    result=terraform_command_executor("terraform state list","foundation")
-    logger.info(result['stdout'])
-    logger.info(result['stderr'])
-    return "GOOD"

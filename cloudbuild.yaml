@@ -5,7 +5,7 @@ steps:
     args:
     - '-c'
     - |
-      gcloud secrets versions access latest --secret="devops-agent-secret" > .env
+      gcloud secrets versions access latest --secret="AGENT_SECRETS_DEV" > .env
 
   - id: build
     name: "gcr.io/cloud-builders/docker"
@@ -13,9 +13,10 @@ steps:
     args:
       - "-c"
       - |
-        docker build -t europe-west1-docker.pkg.dev/pigen-463612/devops-agent-artifact/devops-agent:${SHORT_SHA} -t europe-west1-docker.pkg.dev/pigen-463612/devops-agent-artifact/devops-agent:latest .
-        docker push europe-west1-docker.pkg.dev/pigen-463612/devops-agent-artifact/devops-agent:${SHORT_SHA}
-        docker push europe-west1-docker.pkg.dev/pigen-463612/devops-agent-artifact/devops-agent:latest
+        docker compose -f docker-compose-dev.yml build
+        docker tag europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:latest europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:${SHORT_SHA}
+        docker push europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:${SHORT_SHA}
+        docker push europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:latest
   - id: deploy
     name: "gcr.io/cloud-builders/gcloud"
     entrypoint: sh
@@ -23,11 +24,11 @@ steps:
       - "-c"
       - |
         echo "***************************"
-        echo "DEPLOYING TO devops-agent"
+        echo "DEPLOYING TO ckeeper-agent-dev"
         echo "***************************"
-        gcloud run services update devops-agent-app \
+        gcloud run services update ckeeper-agent-dev \
           --region=${LOCATION} \
-          --image=europe-west1-docker.pkg.dev/pigen-463612/devops-agent-artifact/devops-agent:latest
+          --image=europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:latest
 
 options:
   logging: CLOUD_LOGGING_ONLY

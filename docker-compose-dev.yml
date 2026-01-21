@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  ckeeper-agent:
+    image: europe-west1-docker.pkg.dev/pigen-463612/ckeeper-repo/devops-agent:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GITHUBAPP_USER_NAME: ${GITHUBAPP_USER_NAME}
+        GITHUBAPP_USER_EMAIL: ${GITHUBAPP_USER_EMAIL}
+    ports:
+      - "8000:8000"
+    container_name: ckeeper-agent
+    environment:
+      - GITHUBAPP_USER_NAME=${GITHUBAPP_USER_NAME}
+      - GITHUBAPP_USER_EMAIL=${GITHUBAPP_USER_EMAIL}

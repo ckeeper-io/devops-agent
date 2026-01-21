@@ -194,3 +194,4 @@ cython_debug/
 .cursorindexingignore
 notebooks/
 tmp
+.env.deploy
