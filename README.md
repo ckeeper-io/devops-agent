@@ -18,6 +18,10 @@
 
 * **🔄 Background Processing**: Handles long-running tasks asynchronously via FastAPI background tasks.
 
+This system also uses another separate code search and evaluation system:
+- https://github.com/ckeeper-io/knowledge-graph-manager.git
+- https://github.com/ckeeper-io/agent-evaluation-pipeline
+
 ## 📸 Demo
 
 Below is an example of the agent decomposing a high-level user request into a structured plan:
